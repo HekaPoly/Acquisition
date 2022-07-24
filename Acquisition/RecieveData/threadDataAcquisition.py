@@ -4,6 +4,10 @@ import queue
 import timeit
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+# Get relative path
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 ###################################################################
 # This function is called when the user wants to start data acquisition
@@ -157,7 +161,7 @@ def generateNpyFile(filename, listOfValues):
     encoder3 = np.array(listOfValues[10])
     encoder4 = np.array(listOfValues[11])
 
-    np.savez('C:/Users/truiz/OneDrive/Desktop/GUI_Acquisition_txt_file/' + filename, 
+    np.savez(ROOT_DIR + '/RecieveData/saved_data/' + filename, 
                 electrode1=electrode1, electrode2=electrode2, electrode3=electrode3, electrode4=electrode4,
                 electrode5=electrode5, electrode6=electrode6, electrode7=electrode7, electrode8=electrode8,
                 encoder1=encoder1, encoder2=encoder2, encoder3=encoder3, encoder4=encoder4)
@@ -179,7 +183,7 @@ def plotDataNpz(nameOfNpzFile):
         generalPlotList.append(encoder)
 
     # Load all the npy files contained in the npz
-    dataNpz = np.load('C:/Users/truiz/OneDrive/Desktop/GUI_Acquisition_txt_file/' + nameOfNpzFile + '.npz')
+    dataNpz = np.load(ROOT_DIR + '/RecieveData/saved_data/' + nameOfNpzFile + '.npz')
     
     # Store all the data from the npy files
     dataElectrode = []
