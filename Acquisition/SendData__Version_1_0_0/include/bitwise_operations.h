@@ -10,8 +10,8 @@
  * 
  */
 
-#include "stdio.h"
-#include "stdint.h"
+#include <stdio.h>
+#include <stdint.h>
 
 /* Mask functions */
 uint8_t  mask_8_bit(uint8_t n1, uint8_t mask);
