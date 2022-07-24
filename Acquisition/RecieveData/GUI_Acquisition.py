@@ -9,11 +9,10 @@ from threading import Thread
 from kivy.core.window import Window
 import randomname as random
 import os
-import main # Import main.py in the same directory
+import threadDataAcquisition # Import main.py in the same directory
 
 # Get relative path
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
-
 
 
 ###################################################################
@@ -54,7 +53,7 @@ class InfoWindow(Screen):
     # Click on save button
     # All info is sent in a .txt file to be read afterwards by acquiring thread
     def saveSelf(self):
-        with open(ROOT_DIR + '/RecieveData__Version_1_0_0/' + self.filename.text + '.txt', 'w') as f:
+        with open(ROOT_DIR + '/RecieveData/config_files/' + self.filename.text + '.txt', 'w') as f:
             f.write(self.filename.text)
             f.write('\n')
             f.write(self.numberOfElectrodes.text)
@@ -84,7 +83,7 @@ class AcquireWindow(Screen):
     # Defines what happens when a load is required upon entering the Acquire window
     def loadSelf(self):
         # The .txt file created when the submit button is clicked is used here
-        with open(ROOT_DIR + '/RecieveData__Version_1_0_0/' + self.current + '.txt', 'r') as f:
+        with open(ROOT_DIR + '/RecieveData/config_files/' + self.current + '.txt', 'r') as f:
             lines = f.readlines()
         self.fileName.text                  = "File name is " + lines[0].rstrip() + " .npy"
         self.numberOfElectrodesInfo.text    = "There are " + lines[1].rstrip() + " electrodes"
@@ -98,7 +97,7 @@ class AcquireWindow(Screen):
             # Name of thread has to be random if the program is meant to run multiple times in a row
         stopThread = Event()  # Set flag is false by default - will stop the acquiring thread
         nameThreadAcquire = random.get_name() 
-        nameThreadAcquire = Thread(target=main.acquireData, args=(lines[0].rstrip(), int(lines[1].rstrip()), int(lines[2].rstrip()), stopThread))
+        nameThreadAcquire = Thread(target=threadDataAcquisition.acquireData, args=(lines[0].rstrip(), int(lines[1].rstrip()), int(lines[2].rstrip()), stopThread))
 
         # Assign the objects to their objects in the window objects
         self.threadAcquire = nameThreadAcquire
@@ -128,7 +127,7 @@ class AcquireWindow(Screen):
     
     # Defines what happens when we press the plot data button
     def plotData(self):
-        main.plotDataNpz(self.current)
+        threadDataAcquisition.plotDataNpz(self.current)
 
 
 
