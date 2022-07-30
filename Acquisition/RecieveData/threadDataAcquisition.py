@@ -61,7 +61,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM4', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            arduino = serial.Serial(port='COM3', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
@@ -161,11 +161,7 @@ def generateNpyFile(filename, listOfValues):
     encoder3 = np.array(listOfValues[10])
     encoder4 = np.array(listOfValues[11])
 
-<<<<<<<< HEAD:Acquisition/RecieveData/threadRecieveData.py
-    np.savez(ROOT_DIR + '/RecieveData/savedData/' + filename, 
-========
     np.savez(ROOT_DIR + '/RecieveData/saved_data/' + filename, 
->>>>>>>> b7a0ba7c9deb7fbcb4ba46216f0e3331d82a021b:Acquisition/RecieveData/threadDataAcquisition.py
                 electrode1=electrode1, electrode2=electrode2, electrode3=electrode3, electrode4=electrode4,
                 electrode5=electrode5, electrode6=electrode6, electrode7=electrode7, electrode8=electrode8,
                 encoder1=encoder1, encoder2=encoder2, encoder3=encoder3, encoder4=encoder4)
@@ -187,11 +183,7 @@ def plotDataNpz(nameOfNpzFile):
         generalPlotList.append(encoder)
 
     # Load all the npy files contained in the npz
-<<<<<<<< HEAD:Acquisition/RecieveData/threadRecieveData.py
-    dataNpz = np.load(ROOT_DIR + '/RecieveData/savedData/' + nameOfNpzFile + '.npz')
-========
     dataNpz = np.load(ROOT_DIR + '/RecieveData/saved_data/' + nameOfNpzFile + '.npz')
->>>>>>>> b7a0ba7c9deb7fbcb4ba46216f0e3331d82a021b:Acquisition/RecieveData/threadDataAcquisition.py
     
     # Store all the data from the npy files
     dataElectrode = []
