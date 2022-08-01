@@ -4,10 +4,6 @@ import queue
 import timeit
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-
-# Get relative path
-ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 ###################################################################
 # This function is called when the user wants to start data acquisition
@@ -41,7 +37,7 @@ def acquireData(filename, numberOfElectrodes, numberOfEncoders, stopEvent):
     # Sanity print - checks if generalList was created correctly
     print("General list created.")
     print(generalList)
-
+# generalList is a list of (nbElectrodes + nbEncodeurs) empty list and each of these empty list will containt all the bytes that were measured for the specific instrument
     # Call the collectData function to start collecting data
     collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, stopEvent)
 
@@ -61,7 +57,8 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM3', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            # Create a way to know the current port
+            arduino = serial.Serial(port='COM4', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
@@ -72,7 +69,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
             pass
 
     # Create a queue to hold in all the bytes sent over the serial port
-    que = queue.Queue()
+    que = queue.Queue()  # Initialize a FIFO queue meaning the first one that got in will be the first one out 
     print('Queue created, starting acquisition')
 
     # Start a timer to determine amount of time passed between beggining and end of acquisition
@@ -105,9 +102,13 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     # Stop timer recording the acquisition time
     stop = timeit.default_timer()
     print(stop - timerStart)
+    
+    ## Print the number of packs (of 32 bytes) of data sent (electrodes: 2 bytes ; encodeurs: 4 bytes)
+    #print(que.qsize() / (numberOfElectrodes*2 + numberOfEncoders*4))  
 
-    # Print the number of packs (of 32 bytes) of data sent 
-    print(que.qsize() / (numberOfElectrodes*2 + numberOfEncoders*4))
+    # Print the number of packs (of 32 bytes) of data sent (electrodes: 2 bytes ; encodeurs: 4 bytes)
+    nbPacks = que.qsize() / (numberOfElectrodes*2 + numberOfEncoders*4)
+    print(nbPacks)
 
     # Transform the queue into a list to simplify data recomposition
     listData = list(que.queue)
@@ -117,7 +118,8 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     
     counter = 0
     # Loops to recompose values
-    for i in range(0, int(len(listData) / (numberOfElectrodes*2 + numberOfEncoders*4))):
+    for i in range(0, int(nbPacks)):
+        # We know that our packs start with the bytes of the electrodes and than the bytes of the encodeurs ence the for loops order
         # First loop recomposes electrode values
             # Append two bytes and left shift the second one (as it is the MSB)
             # Do this for the specified number of electrodes
@@ -136,17 +138,26 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
             counter += 4
 
     # Plot all values obtained
-    for i in range(0, len(values) - (len(generalList)-1), len(generalList)):
+    # generalList is a list of lists and each list represent a mesauring instrument and inside those lists are packs of length of 2 bytes for the electrode and 4 bytes for the encodeur
+    for i in range(0, len(values) - (len(generalList)-1), len(generalList)): # generalList is the step of the range and is equal to the number of measuring instruments
+        # each i iteration represent a sample moment of all the measuring instruments
         for j in range(0, len(generalList)):
-            generalList[j].append(values[i + j])
+            generalList[j].append(values[i + j]) # j is the indice for a measuring instrument 
     print('Acquisition done')
 
     # Call the generateNpyFile function 
     generateNpyFile(filename, generalList)
 
+##################################################################
+# This function is called to transfer all the data collected into a file with the extennsion npy
+# @params: filename - Name of the .npy file the user wants to generate
+#          listOfValues - List that containts data previously collected that we want to transfer  
+##################################################################
 
 def generateNpyFile(filename, listOfValues):
     # Transfer all lists into .npy file
+    # By properly organizing the generalList, we can easily extract the information for each measuring instrument
+    # listOfValues = generalList
     electrode1 = np.array(listOfValues[0])
     electrode2 = np.array(listOfValues[1])
     electrode3 = np.array(listOfValues[2])
@@ -161,10 +172,12 @@ def generateNpyFile(filename, listOfValues):
     encoder3 = np.array(listOfValues[10])
     encoder4 = np.array(listOfValues[11])
 
-    np.savez(ROOT_DIR + '/RecieveData/saved_data/' + filename, 
+    np.savez('C:/Users/truiz/OneDrive/Desktop/GUI_Acquisition_txt_file/' + filename, 
                 electrode1=electrode1, electrode2=electrode2, electrode3=electrode3, electrode4=electrode4,
                 electrode5=electrode5, electrode6=electrode6, electrode7=electrode7, electrode8=electrode8,
                 encoder1=encoder1, encoder2=encoder2, encoder3=encoder3, encoder4=encoder4)
+
+    plotDataNpz(filename)
 
 
 # Plots data coming from an npz
@@ -183,7 +196,7 @@ def plotDataNpz(nameOfNpzFile):
         generalPlotList.append(encoder)
 
     # Load all the npy files contained in the npz
-    dataNpz = np.load(ROOT_DIR + '/RecieveData/saved_data/' + nameOfNpzFile + '.npz')
+    dataNpz = np.load('C:/Users/truiz/OneDrive/Desktop/GUI_Acquisition_txt_file/' + nameOfNpzFile + '.npz')
     
     # Store all the data from the npy files
     dataElectrode = []
