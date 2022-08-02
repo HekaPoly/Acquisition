@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-# Get relative path
+# Get relative path to folder
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 ###################################################################
 # This function is called when the user wants to start data acquisition
-# We use this function as a initializer to make sure everything is correctly set to collect data
+# We use this function as a initializer to make sure everything is correctly set to collect data. This function creates
+# generalList, a list of (nbElectrodes + nbEncodeurs) empty lists and each of these empty list will contain all the bytes that were sent over by the electrodes and encoders.
+#
 # @params: filename - Name of the .npy file the user wants to generate
 #          numberOfElectrodes - Number of electrodes collecting data
 #          numberOfEncoders - Number of encoders collecting data
@@ -26,19 +28,15 @@ def acquireData(filename, numberOfElectrodes, numberOfEncoders, stopEvent):
     # Create a general list to contain all the lists of values of data collected
     generalList=[]
 
-    # Create 8 lists for the maximal 8 electrodes
-        # Some lists will be empty if less than 8 electrodes are specified
+    # Create empty lists to store all data
     for i in range(0, 8):
         electrode=[]
         generalList.append(electrode)
 
-    # Create 4 lists for the maximal 4 encoders
-        # Some lists will be empty if less than 4 encoders are specified
     for i in range(0, 4):
         encodeur=[]
         generalList.append(encodeur)
 
-    # Sanity print - checks if generalList was created correctly
     print("General list created.")
     print(generalList)
 
@@ -48,11 +46,16 @@ def acquireData(filename, numberOfElectrodes, numberOfEncoders, stopEvent):
 
 ###################################################################
 # This function is called after a general list has been correctly initialized
+# It initializes a FIFO queue meaning the first value that got in will be the first one out. Data coming from
+# the uC will be stored in this queue until post-processing.
+#
 # @params: filename - Name of the .npy file the user wants to generate
 #          generalList - List of lists to contain collected data
 #          numberOfElectrodes - Number of electrodes collecting data
 #          numberOfEncoders - Number of encoders collecting data
 #          stopEvent - Event to indicate to stop collecting data
+#
+# TODO: Implement automatic way to find correct COM port
 ###################################################################
 def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, stopEvent):
     # Check if serial port is open
@@ -71,20 +74,19 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
         except:
             pass
 
-    # Create a queue to hold in all the bytes sent over the serial port
-    que = queue.Queue()
+    que = queue.Queue()   
     print('Queue created, starting acquisition')
 
     # Start a timer to determine amount of time passed between beggining and end of acquisition
     start = timeit.default_timer()
 
     while not stopEvent.is_set(): # While the event flag to stop the thread is false
-        # Get the number of bytes in the input buffer of the serial port
+        # Determine if any values are waiting in read buffer
         bytesToRead = arduino.in_waiting
+
         if bytesToRead != 0:
-            # Read the number of bytes in the input buffer
             data = arduino.read(bytesToRead)
-            # Insert the bytes read in the que
+            # Insert the bytes read in the queue
             for i in range(len(data)):
                 que.put(data[i])
 
@@ -94,6 +96,8 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
 
 ###################################################################
 # This function is called after user has indicated it wants to stop the data acquisition
+# The main for loop in this function takes into account the electrode bytes (which come in first in the pack) and then the 
+# encoder bytes (which come last in the pack), hence the order of recomposition.
 # @params: filename - Name of the .npy file the user wants to generate
 #          generalList - List of lists to contain collected data
 #          numberOfElectrodes - Number of electrodes collecting data
@@ -106,47 +110,52 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     stop = timeit.default_timer()
     print(stop - timerStart)
 
-    # Print the number of packs (of 32 bytes) of data sent 
-    print(que.qsize() / (numberOfElectrodes*2 + numberOfEncoders*4))
+    # Print the number of packs (of 32 bytes) of data sent (electrodes: 2 bytes ; encodeurs: 4 bytes)
+    nbPacks = que.qsize() / (numberOfElectrodes * 2 + numberOfEncoders * 4)
+    print(nbPacks)
 
     # Transform the queue into a list to simplify data recomposition
     listData = list(que.queue)
-
-    # Create list to contain all recomposed values
-    values = []
+    recomposedValues = []
     
     counter = 0
     # Loops to recompose values
-    for i in range(0, int(len(listData) / (numberOfElectrodes*2 + numberOfEncoders*4))):
-        # First loop recomposes electrode values
-            # Append two bytes and left shift the second one (as it is the MSB)
-            # Do this for the specified number of electrodes
+    for i in range(0, int(nbPacks)):
+        # First loop recomposes electrode values - Left shift the second byte of the decomposed value (as it is the MSB)
         for j in range(numberOfElectrodes):
-            values.append(listData[counter] + (listData[counter + 1] << 8))
+            recomposedValues.append(listData[counter] + (listData[counter + 1] << 8))
             # Counter is incremented of 2 as every electrode value is 2 bytes
             counter += 2
 
-        # Second loop recomposes encoders values
-            # Append two bytes and left shift the second, third and fourth bytes
+        # Second loop recomposes encoders values - Left shift the second, third and fourth bytes of the decomposed values
             # Do this for the specified number of encoders
         for k in range(numberOfEncoders):
-            values.append((listData[counter]) + (listData[counter + 1] << 8) + (listData[counter + 2] << 16) + (
+            recomposedValues.append((listData[counter]) + (listData[counter + 1] << 8) + (listData[counter + 2] << 16) + (
                             listData[counter + 3] << 24))
             # Counter is incremented of 4 as every encoder value is 4 bytes
             counter += 4
 
-    # Plot all values obtained
-    for i in range(0, len(values) - (len(generalList)-1), len(generalList)):
+    # generalList is a list of lists and each list represent a mesauring instrument
+    # Inside those lists are packs of length of 2 bytes for an electrode and 4 bytes for an encodeur
+    for i in range(0, len(recomposedValues) - (len(generalList)-1), len(generalList)): # generalList is the step of the range and is equal to the number of measuring instruments
+        # each i iteration represent a sampled moment of all the measuring instruments
         for j in range(0, len(generalList)):
-            generalList[j].append(values[i + j])
+            generalList[j].append(recomposedValues[i + j])
     print('Acquisition done')
 
     # Call the generateNpyFile function 
     generateNpyFile(filename, generalList)
 
 
+##################################################################
+# This function is called to transfer all the data collected into a file with the extennsion npy
+# @params: filename - Name of the .npy file the user wants to generate
+#          listOfValues - List that containts data previously collected that we want to transfer  
+##################################################################
 def generateNpyFile(filename, listOfValues):
     # Transfer all lists into .npy file
+    # By properly organizing the generalList, we can easily extract the information for each measuring instrument
+    # listOfValues = generalList
     electrode1 = np.array(listOfValues[0])
     electrode2 = np.array(listOfValues[1])
     electrode3 = np.array(listOfValues[2])
@@ -166,8 +175,10 @@ def generateNpyFile(filename, listOfValues):
                 electrode5=electrode5, electrode6=electrode6, electrode7=electrode7, electrode8=electrode8,
                 encoder1=encoder1, encoder2=encoder2, encoder3=encoder3, encoder4=encoder4)
 
-
-# Plots data coming from an npz
+##################################################################
+# This function is called to plot all the values obtained during the acquisition period
+# @params: nameOfNpzFile - Name of the .npz file the user wants to plot
+##################################################################
 def plotDataNpz(nameOfNpzFile):
     generalPlotList = []
     # Create 8 lists for the maximal 8 electrodes
