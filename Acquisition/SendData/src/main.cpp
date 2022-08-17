@@ -109,8 +109,8 @@ void loop()
           First value (valuesToSend[i]) is for the LSB - Simply truncate valueElectrode
           Second value (valuesToSend[i+1]) is for the MSB - Right shift of 8 bits and then truncate valueElectrode
       */
-      valuesToSend[i]     = static_cast<uint8_t>(valueElectrode[counterElectrode]);
-      valuesToSend[i + 1] = static_cast<uint8_t>(right_shift_16_bit(valueElectrode[counterElectrode], 8u));
+      valuesToSend[i]     = valueElectrode[counterElectrode];
+      valuesToSend[i + 1] = right_shift_16_bit(valueElectrode[counterElectrode], 8u);
       
       i = i + 1;
       counterElectrode++;
@@ -126,10 +126,10 @@ void loop()
           Third value is obtained by a 16 bit right shift
           Fourth value is for the MSB - 24 bit right shift  
       */
-      valuesToSend[i] = static_cast<uint8_t>(valueEncoder[counterEncoder]);
-      valuesToSend[i + 1] = static_cast<uint8_t>(right_shift_32_bit(valueEncoder[counterEncoder], 8));
-      valuesToSend[i + 2] = static_cast<uint8_t>(right_shift_32_bit(valueEncoder[counterEncoder], 16));
-      valuesToSend[i + 3] = static_cast<uint8_t>(right_shift_32_bit(valueEncoder[counterEncoder], 24));
+      valuesToSend[i] = valueEncoder[counterEncoder];
+      valuesToSend[i + 1] = right_shift_32_bit(valueEncoder[counterEncoder], 8);
+      valuesToSend[i + 2] = right_shift_32_bit(valueEncoder[counterEncoder], 16);
+      valuesToSend[i + 3] = right_shift_32_bit(valueEncoder[counterEncoder], 24);
   
       i = i + 3;
       counterEncoder++;
