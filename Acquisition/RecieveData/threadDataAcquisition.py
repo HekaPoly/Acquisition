@@ -1,4 +1,3 @@
-from json import encoder
 import serial
 import queue
 import timeit
@@ -106,7 +105,6 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
 #          que - The queue where all the bytes are stored
 ###################################################################
 def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders, timerStart, que):
-    # Stop timer recording the acquisition time
     stop = timeit.default_timer()
     print(stop - timerStart)
 
@@ -122,17 +120,16 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     # Loops to recompose values
     for i in range(0, int(nbPacks)):
         # First loop recomposes electrode values - Left shift the second byte of the decomposed value (as it is the MSB)
+        # Counter is incremented of 2 as every electrode value is 2 bytes
         for j in range(numberOfElectrodes):
             recomposedValues.append(listData[counter] + (listData[counter + 1] << 8))
-            # Counter is incremented of 2 as every electrode value is 2 bytes
             counter += 2
 
         # Second loop recomposes encoders values - Left shift the second, third and fourth bytes of the decomposed values
-            # Do this for the specified number of encoders
+        # Counter is incremented of 4 as every encoder value is 4 bytes
         for k in range(numberOfEncoders):
             recomposedValues.append((listData[counter]) + (listData[counter + 1] << 8) + (listData[counter + 2] << 16) + (
                             listData[counter + 3] << 24))
-            # Counter is incremented of 4 as every encoder value is 4 bytes
             counter += 4
 
     # generalList is a list of lists and each list represent a mesauring instrument
@@ -143,7 +140,6 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
             generalList[j].append(recomposedValues[i + j])
     print('Acquisition done')
 
-    # Call the generateNpyFile function 
     generateNpyFile(filename, generalList)
 
 
@@ -155,7 +151,6 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
 def generateNpyFile(filename, listOfValues):
     # Transfer all lists into .npy file
     # By properly organizing the generalList, we can easily extract the information for each measuring instrument
-    # listOfValues = generalList
     electrode1 = np.array(listOfValues[0])
     electrode2 = np.array(listOfValues[1])
     electrode3 = np.array(listOfValues[2])
