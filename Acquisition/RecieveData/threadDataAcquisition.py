@@ -227,3 +227,4 @@ def plotDataNpz(nameOfNpzFile):
         axs[numeroEncodeur].set_title(f'Encodeur {numeroEncodeur}')
         numeroEncodeur += 1
     plt.show()
+    #ici 
