@@ -1,10 +1,12 @@
 /**
- * @file bitwise_operations.h
- * @author Équipe Acquisition - Heka
- * @brief 
+ * @file
+ * bitwise_operations.h
+ * 
+ * @author
+ * Équipe Acquisition - Heka
+ * 
+ * @brief
  * This file is meant to define functions for bitwise operations.
- * @version 0.1
- * @date 2022-06-11
  * 
  * @copyright Copyright Heka (c) 2022
  * 
@@ -14,19 +16,19 @@
 #include <stdint.h>
 
 /* Mask functions */
-uint8_t  mask_8_bit(uint8_t n1, uint8_t mask);
-uint16_t mask_16_bit(uint16_t n1, uint16_t mask);
-uint32_t mask_32_bit(uint32_t n1, uint32_t mask);
-uint64_t mask_64_bit(uint64_t n1, uint64_t mask);
+uint8_t  mask_uint8(uint8_t number, uint8_t mask);
+uint16_t mask_uint16(uint16_t number, uint16_t mask);
+uint32_t mask_uint32(uint32_t number, uint32_t mask);
+uint64_t mask_uint64(uint64_t number, uint64_t mask);
 
 /* Left bitwise shifting operations */
-uint8_t  left_shift_8_bit(uint8_t n1, uint8_t left_shit);
-uint16_t left_shift_16_bit(uint16_t n1, uint16_t left_shit);
-uint32_t left_shift_32_bit(uint32_t n1, uint32_t left_shit);
-uint64_t left_shift_64_bit(uint64_t n1, uint64_t left_shit);
+uint8_t  left_shift_uint8(uint8_t number, uint8_t bits_to_shift);
+uint16_t left_shift_uint16(uint16_t number, uint16_t bits_to_shift);
+uint32_t left_shift_uint32(uint32_t number, uint32_t bits_to_shift);
+uint64_t left_shift_uint64(uint64_t number, uint64_t bits_to_shift);
 
 /* Right bitwise shifting operations */
-uint8_t  right_shift_8_bit(uint8_t n1, uint8_t right_shift);
-uint16_t right_shift_16_bit(uint16_t n1, uint16_t right_shift);
-uint32_t right_shift_32_bit(uint32_t n1, uint32_t right_shift);
-uint64_t right_shift_64_bit(uint64_t n1, uint64_t right_shift);
+uint8_t  right_shift_uint8(uint8_t number, uint8_t bits_to_shift);
+uint16_t right_shift_uint16(uint16_t number, uint16_t bits_to_shift);
+uint32_t right_shift_uint32(uint32_t number, uint32_t bits_to_shift);
+uint64_t right_shift_uint64(uint64_t number, uint64_t bits_to_shift);
