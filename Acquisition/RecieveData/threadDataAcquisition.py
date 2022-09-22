@@ -4,6 +4,9 @@ import timeit
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import random
+import altair as alt
+import pandas as pd
 
 # Get relative path to folder
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -57,6 +60,8 @@ def acquireData(filename, numberOfElectrodes, numberOfEncoders, stopEvent):
 # TODO: Implement automatic way to find correct COM port
 ###################################################################
 def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, stopEvent):
+
+    """
     # Check if serial port is open
         # Sets the parameters if not open
     portOpen = False
@@ -72,7 +77,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
             print("Found serial port")
         except:
             pass
-
+    """
     que = queue.Queue()   
     print('Queue created, starting acquisition')
 
@@ -80,6 +85,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     start = timeit.default_timer()
 
     while not stopEvent.is_set(): # While the event flag to stop the thread is false
+        """
         # Determine if any values are waiting in read buffer
         bytesToRead = arduino.in_waiting
 
@@ -88,6 +94,10 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
             # Insert the bytes read in the queue
             for i in range(len(data)):
                 que.put(data[i])
+        """
+        data=random.randint(0,9999)
+        que.put(data)
+
 
     else: # Flag is set to true - user wants to stop the data acquisition
         stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders, start, que)
@@ -208,23 +218,19 @@ def plotDataNpz(nameOfNpzFile):
     generalPlotList[10] = dataNpz['encoder3']
     generalPlotList[11] = dataNpz['encoder4']
 
-    # There are 8 electrodes max
-    fig, axs = plt.subplots(8)
-    fig.suptitle('Resultats obtenus Electrodes')
-    numeroElectrode = 0
-    for i in range(0, 8):
-        axs[numeroElectrode].plot(generalPlotList[i])
-        axs[numeroElectrode].set_title(f'Electrode {numeroElectrode}')
-        numeroElectrode+=1
-    plt.show()
-    
-    # There are 4 encoders max
-    fig, axs = plt.subplots(4)
-    fig.suptitle('Resultats obtenus Encodeurs')
-    numeroEncodeur = 0
-    for i in range(8, 12):
-        axs[numeroEncodeur].plot(generalPlotList[i])
-        axs[numeroEncodeur].set_title(f'Encodeur {numeroEncodeur}')
-        numeroEncodeur += 1
-    plt.show()
-    #ici 
+
+    x = np.arange(0, len(generalPlotList[0]), 1)
+    source = pd.DataFrame({
+        'x' : x,
+        'f(x)' : generalPlotList[0]
+
+    })
+
+    chart = alt.Chart(source).mark_line().encode(
+        x = 'x',
+        y = 'f(x)'
+     
+    )
+
+    chart.save('altair-test.html')
+
