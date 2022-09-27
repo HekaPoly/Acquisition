@@ -43,10 +43,8 @@ def sender(connection):
                     
                     # Recompose values
                     values_to_send[0] = value[0] + (value[1] << 8)
-                    values_to_send[1] = value[2] + (value[3] << 8)
                     
                     connection.send(values_to_send[0])
-                    connection.send(values_to_send[1])
                     counter = counter + 1
 
                     timer = timeit.default_timer() - start
@@ -59,27 +57,22 @@ def sender(connection):
 
 
 
-def animate(i, data_x, data_y, lines, connection):
+def animate(i, data_x, lines, connection):
     # Receive data
     pos_x = connection.recv()
-    pos_y = connection.recv()
 
     # New version of array to assign to updated_data
     updated_data_x = data_x
-    updated_data_y = data_y
 
     updated_data_x[-1] = pos_x
-    updated_data_y[-1] = pos_y
 
     lines[0].set_ydata(updated_data_x)
-    lines[1].set_ydata(updated_data_y)
 
     # Transfer new version of data to the data array
     for j in range(len(updated_data_x) - 1):
         data_x[j] = updated_data_x[j + 1]
-        data_y[j] = updated_data_y[j + 1]
 
-    return lines[0], lines[1],
+    return lines[0],
 
 def plot_data(connection):
     # Plot data
@@ -88,17 +81,14 @@ def plot_data(connection):
 
     t = np.arange(0, 10, (1/10))
     data_x = np.arange(0, 100, 1)
-    data_y = np.arange(0, 100, 1)
 
     # Create line object to contain both lines to plot
     line_x, = ax.plot(t, data_x)
-    line_y, = ax.plot(t, data_y)
     lines = []
     lines.append(line_x)
-    lines.append(line_y)
 
     ani = animation.FuncAnimation(
-        fig, animate,fargs=(data_x, data_y, lines, connection), interval=0.1, blit=True)
+        fig, animate,fargs=(data_x, lines, connection), interval=0.1, blit=True)
 
     plt.show()
 
