@@ -1,0 +1,11 @@
+The RecieveData code is meant to recieve packets of electrode/encoder values from the TeensyLC. 
+  Code is a python script that connects to the TeensyLC via Serial port. It then continuously recieves the packets being sent by the TeensyLC and stores them into a queue.
+  
+For a given version x_y_z, versionning should be done in the following manner : 
+  - If a bugfix is made, z increments.
+  - If a feature is added, y increments.
+  - If the core logic of the code is changed (ie. transferring to real-time acquisition), x increments.
+  
+Every change should be documented in the original commit AND on the google doc corresponding to the code you've worked on.
+This ensures that students can understand correctly your code and keep working on it efficiently.
+
