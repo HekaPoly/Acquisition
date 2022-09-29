@@ -53,7 +53,7 @@ class InfoWindow(Screen):
     # Click on save button
     # All info is sent in a .txt file to be read afterwards by acquiring thread
     def saveSelf(self):
-        with open(ROOT_DIR + '/RecieveData/config_files/' + self.filename.text + '.txt', 'w') as f:
+        with open(ROOT_DIR + '/ReceiveData_Prise_Donnees/config_files/' + self.filename.text + '.txt', 'w') as f:
             f.write(self.filename.text)
             f.write('\n')
             f.write(self.numberOfElectrodes.text)
@@ -83,7 +83,7 @@ class AcquireWindow(Screen):
     # Defines what happens when a load is required upon entering the Acquire window
     def loadSelf(self):
         # The .txt file created when the submit button is clicked is used here
-        with open(ROOT_DIR + '/RecieveData/config_files/' + self.current + '.txt', 'r') as f:
+        with open(ROOT_DIR + '/ReceiveData_Prise_Donnees/config_files/' + self.current + '.txt', 'r') as f:
             lines = f.readlines()
         self.fileName.text                  = "File name is " + lines[0].rstrip() + " .npy"
         self.numberOfElectrodesInfo.text    = "There are " + lines[1].rstrip() + " electrodes"

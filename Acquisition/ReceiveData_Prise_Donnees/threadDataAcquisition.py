@@ -165,7 +165,7 @@ def generateNpyFile(filename, listOfValues):
     encoder3 = np.array(listOfValues[10])
     encoder4 = np.array(listOfValues[11])
 
-    np.savez(ROOT_DIR + '/RecieveData/saved_data/' + filename, 
+    np.savez(ROOT_DIR + '/ReceiveData_Prise_Donnees/saved_data/' + filename, 
                 electrode1=electrode1, electrode2=electrode2, electrode3=electrode3, electrode4=electrode4,
                 electrode5=electrode5, electrode6=electrode6, electrode7=electrode7, electrode8=electrode8,
                 encoder1=encoder1, encoder2=encoder2, encoder3=encoder3, encoder4=encoder4)
@@ -189,7 +189,7 @@ def plotDataNpz(nameOfNpzFile):
         generalPlotList.append(encoder)
 
     # Load all the npy files contained in the npz
-    dataNpz = np.load(ROOT_DIR + '/RecieveData/saved_data/' + nameOfNpzFile + '.npz')
+    dataNpz = np.load(ROOT_DIR + '/ReceiveData_Prise_Donnees/saved_data/' + nameOfNpzFile + '.npz')
     
     # Store all the data from the npy files
     dataElectrode = []
