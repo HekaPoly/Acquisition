@@ -8,6 +8,8 @@ import os
 import random
 import altair as alt
 import pandas as pd
+from utility import dict_color
+
 
 # Get relative path to folder
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -221,28 +223,28 @@ def plotDataNpz(nameOfNpzFile):
 
     x=[None]*(len(generalPlotList))
     dataframe=[None]*(len(generalPlotList))
-    liste_couleur= ["#C0C0C0","#FFFF00","#808000","#800080","#FF00FF","#000080","#00FFFF",
-                        "#FFFFFF","#000000","#800000","#00FF00","#008080","#FF7F50"]
+    list_color= ["#pink","blue","green","yellow","red","white","black",
+                        "purple","marine","brown","grey","orange","light blue"]
     
-    fonction_graphiques(generalPlotList, x, dataframe, liste_couleur)
+    fonction_graphiques(generalPlotList, x, dataframe, list_color)
 
 
 
 ###################################################################
 # 
-# @params: list_Values - Name of the .npy file the user wants to generate
-#          x_values - List of lists to contain collected data
-#          source - Number of electrodes collecting data
-#          color_list - Number of encoders collecting data
+# @params: list_Values - List of lists to contain collected data
+#          x_values - List of lists to contain x values of the graph
+#          source - List to contain x values and f(x)
+#          color_list - 
 ###################################################################
 def fonction_graphiques(list_Values, x_values, source, color_list):
     graph = list[]
 
     for i in range (0, len(list_Values)):
-        # les abscisses x pour le graph
+        
         x_values[i] = np.arange(0, len(list_Values[i]), 1)
 
-        #les sources 
+        
         source[i] = pd.DataFrame({
             'x' : x_values[i],
             'f(x)' : list_Values[i]
