@@ -219,85 +219,52 @@ def plotDataNpz(nameOfNpzFile):
     generalPlotList[10] = dataNpz['encoder3']
     generalPlotList[11] = dataNpz['encoder4']
 
-    ''''
-    x0 = np.arange(0, len(generalPlotList[0]), 1)
-    source0 = pd.DataFrame({
-        'x' : x0,
-        'f(x)' : generalPlotList[0]
-
-    })
-
-    chart0 = alt.Chart(source0).mark_line().encode(
-        x = 'x',
-        y = 'f(x)'
+    x=[None]*(len(generalPlotList))
+    dataframe=[None]*(len(generalPlotList))
+    liste_couleur= ["#C0C0C0","#FFFF00","#808000","#800080","#FF00FF","#000080","#00FFFF",
+                        "#FFFFFF","#000000","#800000","#00FF00","#008080","#FF7F50"]
     
-    )
+    fonction_graphiques(generalPlotList, x, dataframe, liste_couleur)
 
-    x1 = np.arange(0, len(generalPlotList[1]), 1)
-    source1 = pd.DataFrame({
-        'x' : x1,
-        'f(x)' : generalPlotList[1]
 
-    })
 
-    chart1=alt.Chart(source1).mark_line().encode(
-        x = 'x',
-        y = 'f(x)',
-        color=alt.value("#FFAA00")
-    )
-    '''
-    
+###################################################################
+# 
+# @params: list_Values - Name of the .npy file the user wants to generate
+#          x_values - List of lists to contain collected data
+#          source - Number of electrodes collecting data
+#          color_list - Number of encoders collecting data
+###################################################################
+def fonction_graphiques(list_Values, x_values, source, color_list):
+    graph = list[]
 
-    def fonction_graphiques():
-        x=[None]*(len(generalPlotList))
-        source=[None]*(len(generalPlotList))
-        liste_couleur= ["#C0C0C0","#FFFF00","#808000","#800080","#FF00FF","#000080","#00FFFF","#FFFFFF","#000000","#800000","#00FF00","#008080","#FF7F50"]
+    for i in range (0, len(list_Values)):
+        # les abscisses x pour le graph
+        x_values[i] = np.arange(0, len(list_Values[i]), 1)
 
-       
-        #PREMIER GRAPHIQUE
-         
-        x[0] = np.arange(0, len(generalPlotList[0]), 1)
-
-             
-        source[0] = pd.DataFrame({
-                'x' : x[0],
-                'f(x)' : generalPlotList[0]
+        #les sources 
+        source[i] = pd.DataFrame({
+            'x' : x_values[i],
+            'f(x)' : list_Values[i]
         })
 
-    
-        graphique=alt.Chart(source[0]).mark_line().encode(
-                x = 'x',
-                y = 'f(x)',
-                color=alt.value("#CD5C5C")
+        #les graphiques 
+        graph[i] = alt.Chart(source[i]).mark_line().encode(
+            x = 'x',
+            y = 'f(x)',
+            color=alt.value(color_list[i])
         )
-            
-        
-        for n in range (1,len(generalPlotList)):
+        #graphique=graphique+graph
+        graph[0] += graph[i]
 
-            # les abscisses x pour le graph
-            x[n] = np.arange(0, len(generalPlotList[n]), 1)
-
-            #les sources 
-            source[n] = pd.DataFrame({
-                'x' : x[n],
-                'f(x)' : generalPlotList[n]
-            })
-
-            #les graphiques 
-            graph=alt.Chart(source[n]).mark_line().encode(
-                x = 'x',
-                y = 'f(x)',
-                color=alt.value(liste_couleur[n])
-            )
-            graphique=graphique+graph
-
-        graphique.save(ROOT_DIR + '/RecieveData/results/graphique-altair.html')
-        
-        
-
-    fonction_graphiques()
-
+    graph[0].save(ROOT_DIR + '/ReceiveData_Prise_Donnees/results/graphique-altair.html')
     
+        
+#creer dictionnaire pour couleurs
+#creer dossier utility => fichier dictionnaire couleur
+   #import utility/dict_couleur
+
+    #continuer de remplir commentaires
     
     
 
