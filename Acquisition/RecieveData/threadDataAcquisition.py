@@ -1,3 +1,4 @@
+from re import T
 import serial
 import queue
 import timeit
@@ -218,19 +219,85 @@ def plotDataNpz(nameOfNpzFile):
     generalPlotList[10] = dataNpz['encoder3']
     generalPlotList[11] = dataNpz['encoder4']
 
-
-    x = np.arange(0, len(generalPlotList[0]), 1)
-    source = pd.DataFrame({
-        'x' : x,
+    ''''
+    x0 = np.arange(0, len(generalPlotList[0]), 1)
+    source0 = pd.DataFrame({
+        'x' : x0,
         'f(x)' : generalPlotList[0]
 
     })
 
-    chart = alt.Chart(source).mark_line().encode(
+    chart0 = alt.Chart(source0).mark_line().encode(
         x = 'x',
         y = 'f(x)'
-     
+    
     )
 
-    chart.save('altair-test.html')
+    x1 = np.arange(0, len(generalPlotList[1]), 1)
+    source1 = pd.DataFrame({
+        'x' : x1,
+        'f(x)' : generalPlotList[1]
+
+    })
+
+    chart1=alt.Chart(source1).mark_line().encode(
+        x = 'x',
+        y = 'f(x)',
+        color=alt.value("#FFAA00")
+    )
+    '''
+    
+
+    def fonction_graphiques():
+        x=[None]*(len(generalPlotList))
+        source=[None]*(len(generalPlotList))
+        liste_couleur= ["#C0C0C0","#FFFF00","#808000","#800080","#FF00FF","#000080","#00FFFF","#FFFFFF","#000000","#800000","#00FF00","#008080","#FF7F50"]
+
+       
+        #PREMIER GRAPHIQUE
+         
+        x[0] = np.arange(0, len(generalPlotList[0]), 1)
+
+             
+        source[0] = pd.DataFrame({
+                'x' : x[0],
+                'f(x)' : generalPlotList[0]
+        })
+
+    
+        graphique=alt.Chart(source[0]).mark_line().encode(
+                x = 'x',
+                y = 'f(x)',
+                color=alt.value("#CD5C5C")
+        )
+            
+        
+        for n in range (1,len(generalPlotList)):
+
+            # les abscisses x pour le graph
+            x[n] = np.arange(0, len(generalPlotList[n]), 1)
+
+            #les sources 
+            source[n] = pd.DataFrame({
+                'x' : x[n],
+                'f(x)' : generalPlotList[n]
+            })
+
+            #les graphiques 
+            graph=alt.Chart(source[n]).mark_line().encode(
+                x = 'x',
+                y = 'f(x)',
+                color=alt.value(liste_couleur[n])
+            )
+            graphique=graphique+graph
+
+        graphique.save(ROOT_DIR + '/RecieveData/results/graphique-altair.html')
+        
+        
+
+    fonction_graphiques()
+
+    
+    
+    
 
