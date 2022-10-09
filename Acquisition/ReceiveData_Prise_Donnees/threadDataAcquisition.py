@@ -189,15 +189,18 @@ def generateNpyFile(filename, listOfValues):
 ##################################################################
 def plotDataNpz(nameOfNpzFile):
     generalPlotList = []
+    max_number_electrodes = 8
+    max_number_encoders = 4
+
     # Create 8 lists for the maximal 8 electrodes
         # Some lists will be empty if less than 8 electrodes are specified
-    for i in range(0, 8):
+    for i in range(0, max_number_electrodes):
         electrode=[]
         generalPlotList.append(electrode)
 
     # Create 4 lists for the maximal 4 encoders
         # Some lists will be empty if less than 4 encoders are specified
-    for i in range(0, 4):
+    for i in range(0, max_number_encoders):
         encoder=[]
         generalPlotList.append(encoder)
 
@@ -221,74 +224,62 @@ def plotDataNpz(nameOfNpzFile):
     generalPlotList[10] = dataNpz['encoder3']
     generalPlotList[11] = dataNpz['encoder4']
 
-
-
-
-    x=[None]*(len(generalPlotList))
-    dataframe=[None]*(len(generalPlotList))
-    list_color= ["pink","blue","green","yellow","red","turquoise","black",
-                        "purple","marine","brown","grey","orange","light blue","darkgreen","white"]
+    x = [None] * (len(generalPlotList))
+    dataframe = [None] * (len(generalPlotList))
+    list_color= ["pink", "blue", "green", "yellow", "red", "turquoise", "black",
+                    "purple", "marine", "brown", "grey", "orange", "light blue", "darkgreen", "white"]
     
-       
-    
-    fonction_graphiques(generalPlotList, x, dataframe, list_color)
+    fonction_graphiques(generalPlotList, x, dataframe, 
+                            list_color, max_number_electrodes, max_number_encoders)
 
 
 
 ###################################################################
-# 
+# @brief: 
 # @params: list_Values - List of lists to contain collected data
 #          x_values - List of lists to contain x values of the graph
 #          source - List to contain x values and f(x)
 #          color_list - List ton contain colors for the graph
+#          max_electrodes - Maximum number of electrodes
+#          max_encoders - Maximum number of encoders
 ###################################################################
-# n=nb_max_eletrodes
-# ne=nb_max_encodeurs
-n=8
-ne=4
+def fonction_graphiques(list_Values, x_values, source, color_list, max_electrodes, max_encoders):
+    graph_electrodes = [None] * max_electrodes
+    graph_encodeurs = [None] * max_encoders
 
-def fonction_graphiques(list_Values, x_values, source, color_list):
-    graph_electrodes = [None]*n
-    graph_encodeurs = [None]*ne
-
-    for i in range (0,n):
-        
+    for i in range(0, max_electrodes):
         x_values[i] = np.arange(0, len(list_Values[i]), 1)
 
-        
         source[i] = pd.DataFrame({
             'x' : x_values[i],
             'f(x)' : list_Values[i]
         })
 
-        graph_electrodes[i] = alt.Chart(source[i],title='electrodes').mark_line().encode(
+        graph_electrodes[i] = alt.Chart(source[i], title='electrodes').mark_line().encode(
             x = 'x',
             y = 'f(x)',
             color=alt.value(color_list[i])
         )
-    
 
         graph_electrodes[0] += graph_electrodes[i]
     
-    for i in range (n,len(list_Values)):
-        
+    for i in range (max_electrodes ,len(list_Values)):        
         x_values[i] = np.arange(0, len(list_Values[i]), 1)
 
-        
         source[i] = pd.DataFrame({
             'x' : x_values[i],
             'f(x)' : list_Values[i]
         })
 
-        graph_encodeurs[i-8] = alt.Chart(source[i]).mark_line().encode(
+        graph_encodeurs[i - max_electrodes] = alt.Chart(source[i]).mark_line().encode(
             x = 'x',
             y = 'f(x)',
             color=alt.value(color_list[i])
         )
-        graph_encodeurs[0] += graph_encodeurs[i-8]
+
+        graph_encodeurs[0] += graph_encodeurs[i - max_electrodes]
     
     graph_encodeurs[0].save(ROOT_DIR + '/ReceiveData_Prise_Donnees/results/graphique_encodeurs.html')  
-
     graph_electrodes[0].save(ROOT_DIR + '/ReceiveData_Prise_Donnees/results/graphique_electrodes.html')
 
 
