@@ -76,7 +76,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     que = queue.Queue()   
     print('Queue created, starting acquisition')
 
-    # Start a timer to determine amount of time passed between beggining and end of acquisition
+    # Start a timer to determine amount of time passed between beginning and end of acquisition
     start = timeit.default_timer()
 
     while not stopEvent.is_set(): # While the event flag to stop the thread is false
@@ -115,7 +115,10 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     # Transform the queue into a list to simplify data recomposition
     listData = list(que.queue)
     recomposedValues = []
-    
+
+    # Offset value comes from the setup() function in main.cpp of the SendData_Prise_Donnees folder
+    OFFSET_FROM_TEENSY = 5000
+
     counter = 0
     # Loops to recompose values
     for i in range(0, int(nbPacks)):
@@ -130,6 +133,8 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
         for k in range(numberOfEncoders):
             recomposedValues.append((listData[counter]) + (listData[counter + 1] << 8) + (listData[counter + 2] << 16) + (
                             listData[counter + 3] << 24))
+
+            recomposedValues[-1] = recomposedValues[-1] - OFFSET_FROM_TEENSY
             counter += 4
 
     # generalList is a list of lists and each list represent a mesauring instrument
@@ -169,6 +174,7 @@ def generateNpyFile(filename, listOfValues):
                 electrode1=electrode1, electrode2=electrode2, electrode3=electrode3, electrode4=electrode4,
                 electrode5=electrode5, electrode6=electrode6, electrode7=electrode7, electrode8=electrode8,
                 encoder1=encoder1, encoder2=encoder2, encoder3=encoder3, encoder4=encoder4)
+
 
 ##################################################################
 # This function is called to plot all the values obtained during the acquisition period
