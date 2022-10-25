@@ -1,4 +1,3 @@
-from re import T
 import serial
 import queue
 import timeit
@@ -68,7 +67,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM3', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            arduino = serial.Serial(port='COM4', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
