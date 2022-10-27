@@ -4,6 +4,10 @@ import timeit
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import random
+import altair as alt
+import pandas as pd
+
 
 # Get relative path to folder
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -63,7 +67,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM3', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            arduino = serial.Serial(port='COM4', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
@@ -182,15 +186,18 @@ def generateNpyFile(filename, listOfValues):
 ##################################################################
 def plotDataNpz(nameOfNpzFile):
     generalPlotList = []
+    MAX_NUMBER_ELECTRODES = 8
+    MAX_NUMBER_ENCODERS = 4
+
     # Create 8 lists for the maximal 8 electrodes
         # Some lists will be empty if less than 8 electrodes are specified
-    for i in range(0, 8):
+    for i in range(0, MAX_NUMBER_ELECTRODES):
         electrode=[]
         generalPlotList.append(electrode)
 
     # Create 4 lists for the maximal 4 encoders
         # Some lists will be empty if less than 4 encoders are specified
-    for i in range(0, 4):
+    for i in range(0, MAX_NUMBER_ENCODERS):
         encoder=[]
         generalPlotList.append(encoder)
 
@@ -214,22 +221,66 @@ def plotDataNpz(nameOfNpzFile):
     generalPlotList[10] = dataNpz['encoder3']
     generalPlotList[11] = dataNpz['encoder4']
 
-    # There are 8 electrodes max
-    fig, axs = plt.subplots(8)
-    fig.suptitle('Resultats obtenus Electrodes')
-    numeroElectrode = 0
-    for i in range(0, 8):
-        axs[numeroElectrode].plot(generalPlotList[i])
-        axs[numeroElectrode].set_title(f'Electrode {numeroElectrode}')
-        numeroElectrode+=1
-    plt.show()
+    x = [None] * (len(generalPlotList))
+    dataframe = [None] * (len(generalPlotList))
+    list_color= ["pink", "blue", "green", "yellow", "red", "turquoise", "black",
+                    "purple", "marine", "brown", "grey", "orange", "light blue", "darkgreen", "white"]
     
-    # There are 4 encoders max
-    fig, axs = plt.subplots(4)
-    fig.suptitle('Resultats obtenus Encodeurs')
-    numeroEncodeur = 0
-    for i in range(8, 12):
-        axs[numeroEncodeur].plot(generalPlotList[i])
-        axs[numeroEncodeur].set_title(f'Encodeur {numeroEncodeur}')
-        numeroEncodeur += 1
-    plt.show()
+    fonction_graphiques(generalPlotList, x, dataframe, 
+                            list_color, MAX_NUMBER_ELECTRODES, MAX_NUMBER_ENCODERS)
+
+
+
+###################################################################
+# @brief: This function plots all values obtained from electrodes in a single graph. It also plots
+#           all values obtained from encoder values in a single graph.
+# @params: list_Values - List of lists to contain collected data
+#          x_values - List of lists to contain x values of the graph
+#          source - List to contain x values and f(x)
+#          color_list - List ton contain colors for the graph
+#          max_electrodes - Maximum number of electrodes
+#          max_encoders - Maximum number of encoders
+###################################################################
+def fonction_graphiques(list_Values, x_values, source, color_list, max_electrodes, max_encoders):
+    graph_electrodes = [None] * max_electrodes
+    graph_encodeurs = [None] * max_encoders
+
+    for i in range(0, max_electrodes):
+        x_values[i] = np.arange(0, len(list_Values[i]), 1)
+
+        source[i] = pd.DataFrame({
+            'Time (s)' : x_values[i],
+            'Electrode values' : list_Values[i]
+        })
+
+        graph_electrodes[i] = alt.Chart(source[i], title='Électrodes').mark_line().encode(
+            x = 'Time (s)',
+            y = 'Electrode values',
+            color=alt.value(color_list[i])
+        )
+
+        graph_electrodes[0] += graph_electrodes[i]
+    
+    for i in range (max_electrodes ,len(list_Values)):        
+        x_values[i] = np.arange(0, len(list_Values[i]), 1)
+
+        source[i] = pd.DataFrame({
+            'Time (s)' : x_values[i],
+            'Encoder values' : list_Values[i]
+        })
+
+        graph_encodeurs[i - max_electrodes] = alt.Chart(source[i], title='Encodeurs').mark_line().encode(
+            x = 'Time (s)',
+            y = 'Encoder values',
+            color=alt.value(color_list[i])
+        )
+
+        graph_encodeurs[0] += graph_encodeurs[i - max_electrodes]
+    
+    graph_encodeurs[0].save(ROOT_DIR + '/ReceiveData_Prise_Donnees/results/graphique_encodeurs.html')  
+    graph_electrodes[0].save(ROOT_DIR + '/ReceiveData_Prise_Donnees/results/graphique_electrodes.html')
+
+
+    
+    
+
