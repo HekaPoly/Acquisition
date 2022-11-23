@@ -17,7 +17,30 @@
 #include "bitwise_operations.h"
 
 /**
- * @brief 
+ * @brief
+ * Checks for a serial command sent by the GUI
+ * 
+ * @return
+ * int32_t Reference value for encoder
+ */
+void check_serial_read_buffer(void)
+{
+  if (Serial.available() > 0)
+  {
+    int32_t command = Serial.read();
+    
+    if (command == 'A')
+    {
+      encod1.write(0u);
+      encod2.write(0u);
+      encod3.write(0u);
+      encod4.write(0u);
+    }
+  }
+}
+
+/**
+ * @brief
  * Setup function for looping code. 
  * Sets baudrate to 1M bits/second and analog resolution to 12 bits (values go from 0 to (2^12 - 1))
  * 
@@ -26,11 +49,6 @@ void setup()
 {
   Serial.begin(1000000u);
   analogReadResolution(12u);
-
-  encod1.write(5000u);
-  encod2.write(5000u);
-  encod3.write(5000u);
-  encod4.write(5000u);
 }
 
 /**
@@ -49,8 +67,11 @@ void setup()
  * The execution time of the whole loop is approximtely 100us (not counting the wait time).
  * 
  */
-void loop() 
+void loop()
 {
+  /* Check for specific instructions */
+  check_serial_read_buffer();
+
   /* Set reference timer */
   CURRENT_MICROS = micros();
 

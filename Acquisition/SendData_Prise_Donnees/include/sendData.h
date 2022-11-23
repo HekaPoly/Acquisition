@@ -14,7 +14,7 @@
 #include <Encoder.h>
 
 unsigned long CURRENT_MICROS;
-uint32_t WAIT_TIME_MICROS = 500;
+uint32_t WAIT_TIME_MICROS = 2000;
 
 /* Values to change depending on tests to be made */
 const uint8_t NUMBER_OF_ELECTRODES = 8;
@@ -67,3 +67,11 @@ uint32_t valueEncoder[NUMBER_OF_ENCODERS];
 
 /* 2 bytes for electrodes - 4 bytes for encoders */
 uint8_t valuesToSend[TOTAL_BYTES_TO_SEND];
+
+/* Reference value for encoders */
+int32_t ref_value = 0;
+
+
+
+/* FUNCTION PROTOTYPES */
+void check_serial_read_buffer(void);

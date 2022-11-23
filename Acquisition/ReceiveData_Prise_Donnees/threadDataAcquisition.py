@@ -7,10 +7,20 @@ import os
 import random
 import altair as alt
 import pandas as pd
-
+import math
+import time
 
 # Get relative path to folder
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+
+############################### START OF SCRIPT #############################################
+###################################################################
+# 
+#
+# @params: 
+###################################################################
+def sendSerialCommand(command_to_send, arduino):
+    arduino.write(bytes(command_to_send, 'utf-8'))
 
 ###################################################################
 # This function is called when the user wants to start data acquisition
@@ -67,7 +77,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM4', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            arduino = serial.Serial(port='COM5', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
@@ -76,26 +86,35 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
             print("Found serial port")
         except:
             pass
-
     que = queue.Queue()   
     print('Queue created, starting acquisition')
 
-    # Start a timer to determine amount of time passed between beginning and end of acquisition
+    # Reset encoder reference values
+    sendSerialCommand('A', arduino)
+    print('Encoder reference values have been reset')
+
+    print('Acquisition started!')
+
+    # Start a timer to determine amount of time passed between beggining and end of acquisition
     start = timeit.default_timer()
+    byte_array = bytearray()
 
     while not stopEvent.is_set(): # While the event flag to stop the thread is false
         # Determine if any values are waiting in read buffer
         bytesToRead = arduino.in_waiting
 
         if bytesToRead != 0:
-            data = arduino.read(bytesToRead)
+            byte_array = arduino.read(bytesToRead)
             # Insert the bytes read in the queue
-            for i in range(len(data)):
-                que.put(data[i])
-
+            for i in range(len(byte_array)):
+                que.put(byte_array[i])
+                
     else: # Flag is set to true - user wants to stop the data acquisition
-        stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders, start, que)
+        # Reset all values
+        arduino.flushInput()
+        arduino.flushOutput()
 
+        stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders, start, que)
 
 ###################################################################
 # This function is called after user has indicated it wants to stop the data acquisition
@@ -113,19 +132,19 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     print(stop - timerStart)
 
     # Print the number of packs (of 32 bytes) of data sent (electrodes: 2 bytes ; encodeurs: 4 bytes)
-    nbPacks = que.qsize() / (numberOfElectrodes * 2 + numberOfEncoders * 4)
-    print(nbPacks)
+    nbPacks = int(que.qsize() / (numberOfElectrodes * 2 + numberOfEncoders * 4))
+    print(f"there are {nbPacks} Packs")
 
     # Transform the queue into a list to simplify data recomposition
     listData = list(que.queue)
     recomposedValues = []
 
     # Offset value comes from the setup() function in main.cpp of the SendData_Prise_Donnees folder
-    OFFSET_FROM_TEENSY = 5000
+    OFFSET_FROM_TEENSY = 0
 
     counter = 0
     # Loops to recompose values
-    for i in range(0, int(nbPacks)):
+    for i in range(0, nbPacks):
         # First loop recomposes electrode values - Left shift the second byte of the decomposed value (as it is the MSB)
         # Counter is incremented of 2 as every electrode value is 2 bytes
         for j in range(numberOfElectrodes):
@@ -137,17 +156,17 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
         for k in range(numberOfEncoders):
             recomposedValues.append((listData[counter]) + (listData[counter + 1] << 8) + (listData[counter + 2] << 16) + (
                             listData[counter + 3] << 24))
-
             recomposedValues[-1] = recomposedValues[-1] - OFFSET_FROM_TEENSY
             counter += 4
 
-    # generalList is a list of lists and each list represent a mesauring instrument
+    # generalList is a list of lists and each list represent a measuring instrument
     # Inside those lists are packs of length of 2 bytes for an electrode and 4 bytes for an encodeur
-    for i in range(0, len(recomposedValues) - (len(generalList)-1), len(generalList)): # generalList is the step of the range and is equal to the number of measuring instruments
+    for i in range(0, len(recomposedValues) - ((len(generalList) - 1)), len(generalList)): # generalList is the step of the range and is equal to the number of measuring instruments
         # each i iteration represent a sampled moment of all the measuring instruments
         for j in range(0, len(generalList)):
             generalList[j].append(recomposedValues[i + j])
     print('Acquisition done')
+    print(generalList[8])
 
     generateNpyFile(filename, generalList)
 
