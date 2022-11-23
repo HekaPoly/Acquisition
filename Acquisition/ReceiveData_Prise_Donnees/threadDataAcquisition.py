@@ -7,7 +7,7 @@ import os
 import random
 import altair as alt
 import pandas as pd
-
+import math
 import time
 
 # Get relative path to folder
@@ -77,7 +77,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM7', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            arduino = serial.Serial(port='COM5', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
@@ -86,7 +86,6 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
             print("Found serial port")
         except:
             pass
-
     que = queue.Queue()   
     print('Queue created, starting acquisition')
 
@@ -117,7 +116,6 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
 
         stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders, start, que)
 
-
 ###################################################################
 # This function is called after user has indicated it wants to stop the data acquisition
 # The main for loop in this function takes into account the electrode bytes (which come in first in the pack) and then the 
@@ -134,19 +132,19 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
     print(stop - timerStart)
 
     # Print the number of packs (of 32 bytes) of data sent (electrodes: 2 bytes ; encodeurs: 4 bytes)
-    nbPacks = que.qsize() / (numberOfElectrodes * 2 + numberOfEncoders * 4)
-    print(nbPacks)
+    nbPacks = int(que.qsize() / (numberOfElectrodes * 2 + numberOfEncoders * 4))
+    print(f"there are {nbPacks} Packs")
 
     # Transform the queue into a list to simplify data recomposition
     listData = list(que.queue)
     recomposedValues = []
 
     # Offset value comes from the setup() function in main.cpp of the SendData_Prise_Donnees folder
-    OFFSET_FROM_TEENSY = 5000
+    OFFSET_FROM_TEENSY = 0
 
     counter = 0
     # Loops to recompose values
-    for i in range(0, int(nbPacks)):
+    for i in range(0, nbPacks):
         # First loop recomposes electrode values - Left shift the second byte of the decomposed value (as it is the MSB)
         # Counter is incremented of 2 as every electrode value is 2 bytes
         for j in range(numberOfElectrodes):
@@ -158,7 +156,6 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
         for k in range(numberOfEncoders):
             recomposedValues.append((listData[counter]) + (listData[counter + 1] << 8) + (listData[counter + 2] << 16) + (
                             listData[counter + 3] << 24))
-
             recomposedValues[-1] = recomposedValues[-1] - OFFSET_FROM_TEENSY
             counter += 4
 

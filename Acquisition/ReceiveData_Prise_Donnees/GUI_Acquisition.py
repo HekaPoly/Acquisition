@@ -113,6 +113,7 @@ class AcquireWindow(Screen):
 
             # Clear the stopThread flag to make sure recording will ensue
             self.stopThread.clear()
+
             # Start the thread (call function main.acquireData)
             self.threadAcquire.start()
 
