@@ -1,12 +1,12 @@
 <InfoWindow>:
     # Create names for each interactive object on InfoWindow
     name: "info"
-    numberOfElectrodes: numberOfElectrodes
-    numberOfEncoders: numberOfEncoders
-    filename: filename
+    number_of_electrodes: number_of_electrodes
+    number_of_encoders: number_of_encoders
+    file_name: file_name
 
     FloatLayout:
-        # Design of space to write desired numberOfElectrodes
+        # Design of space to write desired number_of_electrodes
         Label:
             text:"Number of electrodes : "
             font_size: 5*root.width / 200
@@ -14,14 +14,14 @@
             size_hint: 0.35, 0.15
 
         TextInput:
-            id: numberOfElectrodes
+            id: number_of_electrodes
             text: '8'
             font_size: root.width**2 / 13**4
             multiline: False
             pos_hint: {"x": 0.55 , "top":0.9}
             size_hint: 0.4, 0.1
 
-        # Design of space to write desired numberOfEncoders
+        # Design of space to write desired number_of_encoders
         Label:
             text:"Number of encoders : "
             font_size: 5*root.width / 200
@@ -29,14 +29,14 @@
             size_hint: 0.35, 0.15
 
         TextInput:
-            id: numberOfEncoders
+            id: number_of_encoders
             text: '4'
             font_size: root.width**2 / 13**4
             multiline: False
             pos_hint: {"x": 0.55, "top":0.7}
             size_hint: 0.4, 0.1
 
-        # Design of space to write the filename that will be produced by program
+        # Design of space to write the file_name that will be produced by program
         Label:
             text:"Name of file to be created (.npy): "
             font_size: 5*root.width / 200
@@ -44,7 +44,7 @@
             size_hint: 0.35, 0.15
 
         TextInput:
-            id: filename
+            id: file_name
             text: 'Essai_Classification_1'
             font_size: root.width**2 / 13**4
             multiline: False
@@ -63,28 +63,28 @@
 
 
 <AcquireWindow>:
-    numberOfElectrodesInfo : numberOfElectrodesInfo
-    numberOfEncodersInfo: numberOfEncodersInfo
-    fileName : fileName
+    number_of_electrodes_info : number_of_electrodes_info
+    number_of_encoders_info: number_of_encoders_info
+    file_name : file_name
     changeInfo : changeInfo
     startAcquisition : startAcquisition
     plotNpzData : plotNpzData
 
     FloatLayout:
         Label:
-            id: fileName
+            id: file_name
             pos_hint:{"x": 0.6, "top":0.25}
             size_hint:0.5, 0.2
             text: "File name: "
 
         Label:
-            id: numberOfElectrodesInfo
+            id: number_of_electrodes_info
             pos_hint:{"x": 0.6, "top":0.225}
             size_hint:0.5, 0.2
             text: "Tempo: "
 
         Label:
-            id: numberOfEncodersInfo
+            id: number_of_encoders_info
             pos_hint:{"x": 0.6, "top":0.2}
             size_hint:0.5, 0.2
             text: "Tolerance : "

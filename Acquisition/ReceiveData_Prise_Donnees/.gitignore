@@ -1,1 +1,4 @@
 results/*
+__pycache__
+config_files/*
+saved_data/*

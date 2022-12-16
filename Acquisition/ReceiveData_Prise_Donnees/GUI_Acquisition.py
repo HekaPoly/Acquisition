@@ -9,33 +9,33 @@ from threading import Thread
 from kivy.core.window import Window
 import randomname as random
 import os
-import threadDataAcquisition # Import main.py in the same directory
+import threadDataAcquisition  # Import main.py in the same directory
 
-# Get relative path
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+kv = Builder.load_file("GUI_Acquisition.kv")
 
-
-###################################################################
-# This class defines the content of the Info window - it contains all user input boxes, the possibility to reset and submit information
-###################################################################
 class InfoWindow(Screen):
-    # Define objects used throughout the window
-    numberOfElectrodes = ObjectProperty(None)
-    numberOfEncoders = ObjectProperty(None)
-    filename = ObjectProperty(None)
+    """Cette classe définit le contenu de la fenêtre d'information
+    """
+    number_of_electrodes = ObjectProperty(None)
+    number_of_encoders = ObjectProperty(None)
+    file_name = ObjectProperty(None)
 
-    # Click on submit button
     def submitBtn(self):
-        if int(self.numberOfElectrodes.text) > 0 and int(self.numberOfElectrodes.text) < 9:
-            if int(self.numberOfEncoders.text) > 0 and int(self.numberOfEncoders.text) < 5:
-                if self.filename.text != "":
-                    # Set the current object of the Acquire window to be the filename
-                    AcquireWindow.current = self.filename.text
-                    # Save the information entered in a .txt file
+        """Définit ce qui se passe lorsque l'on appuie sur le bouton Submit
+        """
+        if int(self.number_of_electrodes.text) > 0 and \
+           int(self.number_of_electrodes.text) < 9:
+            if int(self.number_of_encoders.text) > 0 and \
+               int(self.number_of_encoders.text) < 5:
+                if self.file_name.text != "":
+                    """On assigne l'item de la fenêtre d'acquisition
+                        au nom du fichier text créé par la fenêtre d'information
+                    """
+                    AcquireWindow.current = self.file_name.text
                     self.saveSelf()
-                    # Reset information in Info Window
                     self.reset()
-                    # Change screens
+                    """Changer de fenêtre"""
                     sm.current = "acquisition"
                 else:
                     return invalidFilename()
@@ -44,150 +44,153 @@ class InfoWindow(Screen):
         else:
             return invalidNumberOfElectrodes()
 
-    # Click on reset button
-    def reset(self):
-        self.numberOfElectrodes.text = '8'
-        self.numberOfEncoders.text = '4'
-        self.filename.text = 'Essai_Classification_1'
-
-    # Click on save button
-    # All info is sent in a .txt file to be read afterwards by acquiring thread
     def saveSelf(self):
-        with open(ROOT_DIR + '/ReceiveData_Prise_Donnees/config_files/' + self.filename.text + '.txt', 'w') as f:
-            f.write(self.filename.text)
+        """Définit la procédure de sauvegarde des données inscrites par l'utilisateur
+        """
+        with open(ROOT_DIR 
+                    + '/ReceiveData_Prise_Donnees/config_files/' 
+                    + self.file_name.text 
+                    + '.txt', 'w') as f:
+            f.write(self.file_name.text)
             f.write('\n')
-            f.write(self.numberOfElectrodes.text)
+            f.write(self.number_of_electrodes.text)
             f.write('\n')
-            f.write(self.numberOfEncoders.text)
+            f.write(self.number_of_encoders.text)
 
+    def reset(self):
+        """Définit la procédure de 
+        """
+        self.number_of_electrodes.text = '8'
+        self.number_of_encoders.text = '4'
+        self.file_name.text = 'Essai_Classification_1'
 
+    
 ###################################################################
 # This class contains everything related to the data acquisition
 ###################################################################
 class AcquireWindow(Screen):
-    # Define objects used throughout the window
-    fileName = ObjectProperty(None)
-    numberOfElectrodesInfo = ObjectProperty(None)
-    numberOfEncodersInfo = ObjectProperty(None)
+    """Cette classe définit le contenu de la fenêtre d'acquisition
+    """
+    file_name = ObjectProperty(None)
+    number_of_electrodes_info = ObjectProperty(None)
+    number_of_encoders_info = ObjectProperty(None)
     acquisition = ObjectProperty(None)
-    threadAcquisition = ObjectProperty(None)
-    #threadGenerate = ObjectProperty(None)
-    stopThread = ObjectProperty(None)
+    stop_thread = ObjectProperty(None)
     current = ""
 
-    # Defines what happens when we enter the Acquire window - loads the user defined information from previous window
+    # Defines what happens when we enter the Acquire window 
+    # - loads the user defined information from previous window
     def on_enter(self):
+        """Définit ce qui se produit lorsque l'on entre dans la fenêtre d'acquisition
+            Ce fait automatiquement à chaque création de fenêtre d'acquisition
+        """
         self.loadSelf()
 
-
-    # Defines what happens when a load is required upon entering the Acquire window
     def loadSelf(self):
-        # The .txt file created when the submit button is clicked is used here
+        """Procédure de chargement de l'information retenue par la fenêtre précédente (fenêtre d'information)
+        """
         with open(ROOT_DIR + '/ReceiveData_Prise_Donnees/config_files/' + self.current + '.txt', 'r') as f:
             lines = f.readlines()
-        self.fileName.text                  = "File name is " + lines[0].rstrip() + " .npy"
-        self.numberOfElectrodesInfo.text    = "There are " + lines[1].rstrip() + " electrodes"
-        self.numberOfEncodersInfo.text      = "There are " + lines[2].rstrip() + " encoders"
 
-        # Enable or disable buttons
+        self.file_name.text = "File name is " + lines[0].rstrip() + " .npy"
+        self.number_of_electrodes_info.text = "There are " + lines[1].rstrip() + " electrodes"
+        self.number_of_encoders_info.text = "There are " + lines[2].rstrip() + " encoders"
+
+        """Activation du bouton de prise de données"""
         self.startAcquisition.disabled = False
 
-        # Create thread and create a threading event 
-            # To stop the thread we will need a stopThread event
-            # Name of thread has to be random if the program is meant to run multiple times in a row
-        stopThread = Event()  # Set flag is false by default - will stop the acquiring thread
-        nameThreadAcquire = random.get_name() 
-        nameThreadAcquire = Thread(target=threadDataAcquisition.acquireData, args=(lines[0].rstrip(), int(lines[1].rstrip()), int(lines[2].rstrip()), stopThread))
+        """Le flag stop_thread est false par défaut"""
+        stop_thread = Event()
 
-        # Assign the objects to their objects in the window objects
-        self.threadAcquire = nameThreadAcquire
-        self.stopThread = stopThread
+        name_thread_acquire = random.get_name()
+        name_thread_acquire = Thread(target=threadDataAcquisition.acquireData,
+                                        args=(lines[0].rstrip(), 
+                                                int(lines[1].rstrip()), 
+                                                int(lines[2].rstrip()),
+                                                stop_thread))
 
+        self.thread_acquire = name_thread_acquire
+        self.stop_thread = stop_thread
 
-    # Defines what happens when we press the start/stop acquisition button 
     def startAcquire(self):
-        # If we want to start data acquisition
-        if(self.startAcquisition.text == 'Start data acquisition'):
-            # Update buttons
+        """Définit ce qui se produit lorsque l'on appuie sur le bouton Start/Stop
+        """
+        if (self.startAcquisition.text == 'Start data acquisition'):
             self.startAcquisition.text = 'Stop data acquisition'
+            self.stop_thread.clear()
+            self.thread_acquire.start()
 
-            # Clear the stopThread flag to make sure recording will ensue
-            self.stopThread.clear()
-
-            # Start the thread (call function main.acquireData)
-            self.threadAcquire.start()
-
-        # If we want to stop a data acquisition
-        elif(self.startAcquisition.text == 'Stop data acquisition'):
-            # Update buttons
+        elif (self.startAcquisition.text == 'Stop data acquisition'):
             self.startAcquisition.text = 'Start data acquisition'
             self.startAcquisition.disabled = True
+            self.stop_thread.set()
 
-            # Set the flag to true and make the recording stop
-            self.stopThread.set()
-    
-    # Defines what happens when we press the plot data button
     def plotData(self):
+        """Définit ce qui se produit lorsque l'on appuie sur le bouton de Plot Data
+        """
         threadDataAcquisition.plotDataNpz(self.current)
 
 
-
-###################################################################
-# Indicate to screen manager that all is good - Still don't know why this needs to be before main
-###################################################################
 class WindowManager(ScreenManager):
+    """Cette classe définit un Window Manager qui permettra de naviguer entre les fenêtres définies
+    """
     pass
 
 
-###################################################################
-# Define error messages
-###################################################################
 def invalidNumberOfEncoders():
+    """Définit le popup apparaissant au cas où un mauvais nombre d'encodeurs est entré par l'utilisateur
+    """
     pop = Popup(title='Invalid Number Of Encoders',
-                  content=Label(text='Invalid number of encoders. Please insert value between 1 and 4.'),
-                  size_hint=(None, None), size=(500, 400))
-    pop.open()
-
-
-def invalidNumberOfElectrodes():
-    pop = Popup(title='Invalid Number Of Electrodes',
-                content=Label(text='Invalid number of electrodes. Please insert value between 1 and 8.'),
+                content=Label(
+                    text='Invalid number of encoders. \
+                        Please insert value between 1 and 4.'),
                 size_hint=(None, None), size=(500, 400))
     pop.open()
 
+def invalidNumberOfElectrodes():
+    """Définit le popup apparaissant au cas où un mauvais nombre d'électrodes est entré par l'utilisateur
+    """
+    pop = Popup(title='Invalid Number Of Electrodes',
+                content=Label(
+                    text='Invalid number of electrodes. \
+                        Please insert value between 1 and 8.'),
+                size_hint=(None, None), size=(500, 400))
+    pop.open()
 
 def invalidFilename():
+    """Définit le popup apparaissant au cas où un mauvais nom de fichier est entré par l'utilisateur
+    """
     pop = Popup(title='Invalid Filename',
                 content=Label(text='Invalid filename.'),
                 size_hint=(None, None), size=(500, 400))
     pop.open()
 
-
 def invalidForm():
+    """Définit le popup apparaissant au cas où une case d'information est vide
+    """
     pop = Popup(title='Invalid Form',
-                  content=Label(text='Please fill in all inputs with valid information.'),
-                  size_hint=(None, None), size=(400, 400))
+                content=Label(
+                    text='Please fill in all inputs with valid information.'),
+                size_hint=(None, None), size=(400, 400))
 
     pop.open()
 
-
-###################################################################
-# Main build for application
-###################################################################
-kv = Builder.load_file("GUI_Acquisition.kv")
-
 class MyMainApp(App):
+    """Cette classe définit l'objet gérant l'interface graphique
+    """
     def build(self):
         return sm
 
+
 if __name__ == "__main__":
     sm = WindowManager()
-    # Screen names are defined here
+
+    """On associe les noms info et acquisition aux objets InfoWindow et AcquireWindow"""
     screens = [InfoWindow(name="info"), AcquireWindow(name="acquisition")]
     for screen in screens:
         sm.add_widget(screen)
 
-    # Initial screen is indicated here
+    """Fenêtre initiale"""
     sm.current = "info"
 
     MyMainApp().run()

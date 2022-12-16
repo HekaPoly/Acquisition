@@ -77,7 +77,7 @@ def collectData(filename, generalList, numberOfElectrodes, numberOfEncoders, sto
     while not portOpen:
         try:
             # Make sure COM port is correct (see in Gestionnaire de périphériques)
-            arduino = serial.Serial(port='COM5', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
+            arduino = serial.Serial(port='COM6', baudrate=1000000, timeout=None, xonxoff=False, rtscts=False,
                                     dsrdtr=False)
             # Clear the serial buffer (input and output)
             arduino.flushInput()
@@ -133,7 +133,6 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
 
     # Print the number of packs (of 32 bytes) of data sent (electrodes: 2 bytes ; encodeurs: 4 bytes)
     nbPacks = int(que.qsize() / (numberOfElectrodes * 2 + numberOfEncoders * 4))
-    print(f"there are {nbPacks} Packs")
 
     # Transform the queue into a list to simplify data recomposition
     listData = list(que.queue)
@@ -166,7 +165,6 @@ def stopAcquisition(filename, generalList, numberOfElectrodes, numberOfEncoders,
         for j in range(0, len(generalList)):
             generalList[j].append(recomposedValues[i + j])
     print('Acquisition done')
-    print(generalList[8])
 
     generateNpyFile(filename, generalList)
 
