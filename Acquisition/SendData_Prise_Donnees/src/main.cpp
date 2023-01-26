@@ -85,6 +85,8 @@ void loop()
     valueElectrode[i] = analogRead(electrodePin[i]);
   }
 
+  
+
   valueEncoder[0] = abs(encod1.read());
   valueEncoder[1] = abs(encod2.read());
   valueEncoder[2] = abs(encod3.read());

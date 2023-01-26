@@ -13,6 +13,7 @@
 #include <Arduino.h>
 #include <Encoder.h>
 
+
 unsigned long CURRENT_MICROS;
 uint32_t WAIT_TIME_MICROS = 2000;
 
