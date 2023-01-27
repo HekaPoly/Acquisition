@@ -15,6 +15,7 @@
 
 #include "sendData.h"
 #include "bitwise_operations.h"
+#include "rectify_signal.h"
 
 /**
  * @brief
@@ -82,10 +83,8 @@ void loop()
   /* Read all electrode signals and encoder values */
   for (int i = 0; i < NUMBER_OF_ELECTRODES; i++) 
   {
-    valueElectrode[i] = analogRead(electrodePin[i]);
+    valueElectrode[i] = read_and_rectify(i);
   }
-
-  
 
   valueEncoder[0] = abs(encod1.read());
   valueEncoder[1] = abs(encod2.read());

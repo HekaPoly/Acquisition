@@ -12,5 +12,5 @@
 
 #include <Arduino.h>
 
-void read_and_rectify(uint32_t index);
-void apply_rms(uint32_t array[]);  
+uint32_t read_and_rectify(uint8_t index);
+uint32_t apply_rms(uint32_t array[]);

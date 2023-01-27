@@ -1,34 +1,43 @@
 #include "rectify_signal.h"
 #include "sendData.h"
-void read_and_rectify(uint32_t index)
-{
-    uint32_t array[10];
 
-    for(uint32_t i = 0; i < 11; i++)
+#define NUM_VALUES_TO_POLL 10
+
+/**
+ * @brief 
+ * 
+ * @param index 
+ * @return uint32_t 
+ */
+uint32_t read_and_rectify(uint8_t index)
+{
+    uint32_t array[NUM_VALUES_TO_POLL];
+
+    for(uint32_t i = 0; i < NUM_VALUES_TO_POLL; i++)
     {
         array[i] = analogRead(electrodePin[index]);
     }
 
-    apply_rms(array);
+    uint32_t rectified_value = apply_rms(array);
+
+    return rectified_value;
 }
 
-int apply_rms(uint32_t array[], uint32_t n)
-{ 
+uint32_t apply_rms(uint32_t array[])
+{
     int square = 0;
-    float mean = 0.0; 
-    float root = 0.0;
-    int x = 0;
     // Calculate square.
-   for  (int x = 0; x < n; x++) ;
-   {
-        square += pow(array[x], 2);}
+    for  (int i = 0; i < NUM_VALUES_TO_POLL; i++)
+    {
+        square += pow(array[i], 2);
+    }
       
-   // Calculate Mean.
-    mean = (square / n);
+    // Calculate Mean.
+    float mean = (square / NUM_VALUES_TO_POLL);
  
     // Calculate Root.
-    root = sqrt(mean);
-    root = round(root);
+    float root = sqrt(mean);
+    uint32_t rms_value = round(root);
  
-    return root;
-    }
+    return rms_value;
+}
