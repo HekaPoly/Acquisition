@@ -1,7 +1,10 @@
 #include "rectify_signal.h"
-#include "sendData.h"
+
 
 #define NUM_VALUES_TO_POLL 10
+
+#define CUTOFF 1000
+#define SAMPLE_RATE 100
 
 /**
  * @brief 
@@ -9,21 +12,46 @@
  * @param index 
  * @return uint32_t 
  */
-uint32_t read_and_rectify(uint8_t index)
+
+uint32_t read_and_filter(uint8_t index)
 {
-    uint32_t array[NUM_VALUES_TO_POLL];
+    uint32_t signal[NUM_VALUES_TO_POLL];
 
     for(uint32_t i = 0; i < NUM_VALUES_TO_POLL; i++)
     {
-        array[i] = analogRead(electrodePin[index]);
+        signal[i] = analogRead(electrodePin[index]);
     }
 
-    uint32_t rectified_value = apply_rms(array);
+    uint32_t y[NUM_VALUES_TO_POLL];
+    uint32_t filtered_value = apply_LowpassFilter(signal,y,NUM_VALUES_TO_POLL);
+
+    return filtered_value;
+}
+
+uint32_t apply_LowpassFilter(uint32_t *x, uint32_t *y,
+               int M) 
+{
+    int n ;
+    
+    y[0] = x[0];
+    for (n=1; n < M ; n++) {
+        y[n] =  -0.51709399 *y[n-1] +  0.75854699*x[n] +0.75854699*x[n-1];
+    }
+    return x[M-1];
+}
+
+
+
+
+
+uint32_t read_and_rectify(uint8_t index)
+{
+    uint32_t rectified_value = apply_rms();
 
     return rectified_value;
 }
 
-uint32_t apply_rms(uint32_t array[])
+uint32_t apply_rms(uint32_t* array)
 {
     int square = 0;
     // Calculate square.
@@ -41,3 +69,5 @@ uint32_t apply_rms(uint32_t array[])
  
     return rms_value;
 }
+
+

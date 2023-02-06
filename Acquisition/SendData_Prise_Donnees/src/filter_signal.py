@@ -1,0 +1,98 @@
+# Packages and adjustments to the figures
+from scipy import signal
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+
+
+#Ce script doit nous permettre de trouver les coeeficients à mettre dans la fonction apply_filter dans le .cppp
+#pour l'instant les fréquences proche de 1000 Hz ne sont pas beaucoup atténuées (voir graph)
+
+# Generate a signal
+samplingFreq = 10000; # sampled at 10 kHz = 10000 samples / second
+tlims = [0,1]        # in seconds
+signalFreq = [35,1899, 800, 1100]; # Cycles / second (Hz)
+signalMag = [1,0.2]; # magnitude of each sine
+t = np.linspace(tlims[0],tlims[1],(tlims[1]-tlims[0])*samplingFreq)
+y = signalMag[0]*np.sin(2*math.pi*signalFreq[0]*t) + signalMag[1]*np.sin(2*math.pi*signalFreq[1]*t)+ signalMag[1]*np.sin(2*math.pi*signalFreq[2]*t)+ signalMag[1]*np.sin(2*math.pi*signalFreq[3]*t)
+
+# Compute the Fourier transform
+yhat = np.fft.fft(y)
+fcycles = np.fft.fftfreq(len(t),d=1.0/samplingFreq); # the frequencies in cycles/s
+
+# Plot the signal
+# plt.figure()
+# plt.plot(t,y)
+# plt.ylabel("$y(t)$")
+# plt.xlabel("$t$ (s)")
+# plt.xlim([min(t),max(t)])
+
+# Plot the power spectrum
+plt.figure()
+plt.plot(fcycles,np.absolute(yhat))
+plt.xlim([-2000,2000])
+plt.xlabel("$\omega$ (cycles/s)")
+plt.ylabel("$|\hat{y}|$")
+plt.show()
+
+
+w0 = 2*np.pi*1000; # pole frequency (rad/s)
+num = w0        # transfer function numerator coefficients
+den = [1,w0]    # transfer function denominator coefficients
+lowPass = signal.TransferFunction(num,den) # Transfer function
+
+# Generate the bode plot
+w = np.logspace( np.log10(min(signalFreq)*2*np.pi/10), np.log10(max(signalFreq)*2*np.pi*10), 500 )
+w, mag, phase = signal.bode(lowPass,w)
+
+
+plt.figure()
+plt.semilogx(w, mag)
+for sf in signalFreq:
+    plt.semilogx([sf*2*np.pi,sf*2*np.pi],[min(mag),max(mag)],'k:')
+plt.ylabel("Magnitude ($dB$)")
+plt.xlim([min(w),max(w)])
+plt.ylim([min(mag),max(mag)])
+
+# Phase plot
+plt.figure()
+plt.semilogx(w, phase)  # Bode phase plot
+plt.ylabel("Phase ($^\circ$)")
+plt.xlabel("$\omega$ (rad/s)")
+plt.xlim([min(w),max(w)])
+plt.show()
+
+dt = 1.0/samplingFreq
+discreteLowPass = lowPass.to_discrete(dt,method='gbt',alpha=0.5)
+print(discreteLowPass)
+
+
+# The coefficients from the discrete form of the filter transfer function (but with a negative sign)
+b = discreteLowPass.num
+a = -discreteLowPass.den
+print("Filter coefficients b_i: " + str(b))
+print("Filter coefficients a_i: " + str(a[1:]))
+
+# Filter the signal
+yfilt = np.zeros(len(y))
+for i in range(3,len(y)):
+    yfilt[i] = a[1]*yfilt[i-1] + b[0]*y[i] + b[1]*y[i-1]
+    
+# Plot the signal
+# plt.figure()
+# plt.plot(t,y)
+# plt.plot(t,yfilt)
+# plt.ylabel("$y(t)$")
+# plt.xlim([min(t),max(t)])
+
+# Generate Fourier transform
+yfilthat = np.fft.fft(yfilt)
+fcycles = np.fft.fftfreq(len(t),d=1.0/samplingFreq)
+
+plt.figure()
+plt.plot(fcycles,np.absolute(yhat))
+plt.plot(fcycles,np.absolute(yfilthat))
+plt.xlim([-2000,2000])
+plt.xlabel("$\omega$ (cycles/s)")
+plt.ylabel("$|\hat{y}|$")
+plt.show()
