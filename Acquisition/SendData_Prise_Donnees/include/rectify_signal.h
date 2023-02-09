@@ -17,8 +17,11 @@
 
 #include <Arduino.h>
 
+/* CONSTANTS */
+#define NUM_VALUES_TO_POLL 10
+#define POWER_TWO 2
+
 /* FUNCTION PROTOTYPES */
-uint32_t read_and_rectify(uint8_t index);
-uint32_t apply_rms(uint32_t array[]);
+uint32_t rectify(uint8_t index, uint32_t filtered_signal_sample[NUM_VALUES_TO_POLL]);
 
 #endif /* _RECTIFY_SIGNAL_H_ */

@@ -15,4 +15,13 @@
 #ifndef _FILTER_SIGNAL_H_
 #define _FILTER_SIGNAL_H_
 
+#include <Arduino.h>
+
+/* CONSTANTS */
+#define CUTOFF 1000
+#define SAMPLE_RATE 100
+
+/* FUNCTION PROTOTYPES */
+uint32_t filter_and_rectify_signal(uint8_t index);
+
 #endif /* _FILTER_SIGNAL_H_ */

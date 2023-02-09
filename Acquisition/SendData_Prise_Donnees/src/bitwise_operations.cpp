@@ -6,7 +6,7 @@
  * Équipe Acquisition - Heka
  * 
  * @brief 
- * This fileImplementation of bitwise operations
+ * This file implements bitwise operations to comply with MISRA-C 2012 standard
  * 
  * @copyright Copyright Heka (c) 2022
  * 
@@ -14,6 +14,7 @@
 
 #include "bitwise_operations.h"
 
+/* Functions */
 /**
  * @brief Performs a mask operation on a uint8_t
  * 

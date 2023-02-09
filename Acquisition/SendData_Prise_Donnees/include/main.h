@@ -1,11 +1,11 @@
 /**
- * @file 
+ * @file
  * sendData.h
- * 
- * @author 
+ *
+ * @author
  * Équipe Acquisition - Heka
- * 
- * @brief 
+ *
+ * @brief
  * This file is meant to define all variables used to collect electrode and encoder data
  * 
  * @copyright Copyright Heka (c) 2022

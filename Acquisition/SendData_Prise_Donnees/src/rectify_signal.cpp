@@ -1,72 +1,34 @@
-#include "rectify_signal.h"
-
-
-#define NUM_VALUES_TO_POLL 10
-
-#define CUTOFF 1000
-#define SAMPLE_RATE 100
-
 /**
- * @brief 
+ * @file 
+ * rectify_signal.cpp
  * 
- * @param index 
- * @return uint32_t 
+ * @author 
+ * Équipe Acquisition - Heka
+ * 
+ * @brief 
+ * This file implements the filtered EMG signal rectification functions
+ * 
+ * @copyright Copyright Heka (c) 2023
+ * 
  */
 
-uint32_t read_and_filter(uint8_t index)
-{
-    uint32_t signal[NUM_VALUES_TO_POLL];
+#include "rectify_signal.h"
 
-    for(uint32_t i = 0; i < NUM_VALUES_TO_POLL; i++)
+/* FUNCTIONS */
+uint32_t rectify(uint8_t index, uint32_t filtered_signal_sample[NUM_VALUES_TO_POLL])
+{
+    double square = 0;
+
+    for (int i = 0; i < NUM_VALUES_TO_POLL; i++)
     {
-        signal[i] = analogRead(electrodePin[index]);
+        square += pow(filtered_signal_sample[i], POWER_TWO);
     }
 
-    uint32_t y[NUM_VALUES_TO_POLL];
-    uint32_t filtered_value = apply_LowpassFilter(signal,y,NUM_VALUES_TO_POLL);
-
-    return filtered_value;
-}
-
-uint32_t apply_LowpassFilter(uint32_t *x, uint32_t *y,
-               int M) 
-{
-    int n ;
-    
-    y[0] = x[0];
-    for (n=1; n < M ; n++) {
-        y[n] =  -0.51709399 *y[n-1] +  0.75854699*x[n] +0.75854699*x[n-1];
-    }
-    return x[M-1];
-}
-
-
-
-
-
-uint32_t read_and_rectify(uint8_t index)
-{
-    uint32_t rectified_value = apply_rms();
-
-    return rectified_value;
-}
-
-uint32_t apply_rms(uint32_t* array)
-{
-    int square = 0;
-    // Calculate square.
-    for  (int i = 0; i < NUM_VALUES_TO_POLL; i++)
-    {
-        square += pow(array[i], 2);
-    }
-      
-    // Calculate Mean.
     float mean = (square / NUM_VALUES_TO_POLL);
- 
-    // Calculate Root.
     float root = sqrt(mean);
+
     uint32_t rms_value = round(root);
- 
+
     return rms_value;
 }
 

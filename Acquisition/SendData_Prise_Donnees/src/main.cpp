@@ -6,23 +6,24 @@
  * Équipe Acquisition - Heka
  * 
  * @brief 
- * This file contains the setup for the uC program running to collect data from electrodes and encoders.
+ * This file contains the setup for the uC program running to collect data from electrodes and encod_ers.
  * It also contains the main loop of the program. This main loop runs every WAIT_TIME_MICROS microseconds.
  * 
  * @copyright Copyright Heka (c) 2022
  * 
  */
 
-#include "sendData.h"
+#include "main.h"
+#include "filter_signal.h"
 #include "bitwise_operations.h"
-#include "rectify_signal.h"
 
+/* FUNCTIONS */
 /**
  * @brief
  * Checks for a serial command sent by the GUI
  * 
  * @return
- * int32_t Reference value for encoder
+ * int32_t Reference value for encod_er
  */
 void check_serial_read_buffer(void)
 {
@@ -32,10 +33,10 @@ void check_serial_read_buffer(void)
     
     if (command == 'A')
     {
-      encod1.write(0u);
-      encod2.write(0u);
-      encod3.write(0u);
-      encod4.write(0u);
+      encod_1.write(0u);
+      encod_2.write(0u);
+      encod_3.write(0u);
+      encod_4.write(0u);
     }
   }
 }
@@ -57,10 +58,10 @@ void setup()
  * Main loop for the data acquisition uC.
  * @note 
  * We decompose electrode value in 2 bytes: 
- *  First value is for the LSB - Simply truncate valueElectrode
- *  Second value is for the MSB - Right shift of 8 bits and then truncate valueElectrode
- * We decompose encoder value in 4: 
- *  First value is for the LSB - Simply truncate valueEncoder
+ *  First value is for the LSB - Simply truncate values_electrode
+ *  Second value is for the MSB - Right shift of 8 bits and then truncate values_electrode
+ * We decompose encod_er value in 4: 
+ *  First value is for the LSB - Simply truncate values_encoder
  *  Second value is obtained by a 8 bit right shift
  *  Third value is obtained by a 16 bit right shift
  *  Fourth value is for the MSB - 24 bit right shift
@@ -76,50 +77,49 @@ void loop()
   /* Set reference timer */
   CURRENT_MICROS = micros();
 
-  /* Reset all counters */
-  counterElectrode = 0;
-  counterEncoder = 0;
+  uint8_t counter_electrode = 0;
+  uint8_t counter_encoder = 0;
 
-  /* Read all electrode signals and encoder values */
+  /* Read all electrode signals and encod_er values */
   for (int i = 0; i < NUMBER_OF_ELECTRODES; i++) 
   {
-    valueElectrode[i] = read_and_rectify(i);
+    values_electrode[i] = filter_and_rectify_signal(i);
   }
 
-  valueEncoder[0] = abs(encod1.read());
-  valueEncoder[1] = abs(encod2.read());
-  valueEncoder[2] = abs(encod3.read());
-  valueEncoder[3] = abs(encod4.read());
+  values_encoder[0] = abs(encod_1.read());
+  values_encoder[1] = abs(encod_2.read());
+  values_encoder[2] = abs(encod_3.read());
+  values_encoder[3] = abs(encod_4.read());
 
 
   /* Decomposition loop */
   for (int i = 0; i < TOTAL_BYTES_TO_SEND; i++) 
   {
     /* Decompose all electrode values */
-    if (counterElectrode < NUMBER_OF_ELECTRODES) 
+    if (counter_electrode < NUMBER_OF_ELECTRODES) 
     {
-      valuesToSend[i]     = valueElectrode[counterElectrode];
-      valuesToSend[i + 1] = right_shift_uint16(valueElectrode[counterElectrode], 8u);
+      values_to_send[i]     = values_electrode[counter_electrode];
+      values_to_send[i + 1] = right_shift_uint16(values_electrode[counter_electrode], 8u);
       
       i = i + 1;
-      counterElectrode++;
+      counter_electrode++;
     }
 
-    /* Decompose all values from encoders */
-    else if (counterEncoder < NUMBER_OF_ENCODERS) 
+    /* Decompose all values from encod_ers */
+    else if (counter_encoder < NUMBER_OF_ENCODERS) 
     {
-      valuesToSend[i] = valueEncoder[counterEncoder];
-      valuesToSend[i + 1] = right_shift_uint32(valueEncoder[counterEncoder], 8u);
-      valuesToSend[i + 2] = right_shift_uint32(valueEncoder[counterEncoder], 16u);
-      valuesToSend[i + 3] = right_shift_uint32(valueEncoder[counterEncoder], 24u);
+      values_to_send[i] = values_encoder[counter_encoder];
+      values_to_send[i + 1] = right_shift_uint32(values_encoder[counter_encoder], 8u);
+      values_to_send[i + 2] = right_shift_uint32(values_encoder[counter_encoder], 16u);
+      values_to_send[i + 3] = right_shift_uint32(values_encoder[counter_encoder], 24u);
 
       i = i + 3;
-      counterEncoder++;
+      counter_encoder++;
     }
   }
 
   /* Send package of bytes to .py script every interval */
-  Serial.write(valuesToSend, TOTAL_BYTES_TO_SEND);
+  Serial.write(values_to_send, TOTAL_BYTES_TO_SEND);
   Serial.send_now();
 
   /* Wait [interval]us */
@@ -128,4 +128,3 @@ void loop()
     /* Waiting while doing nothing */
   }
 }
-
