@@ -25,6 +25,7 @@ unsigned long CURRENT_MICROS;
 /* Values to change depending on tests to be made */
 #define NUMBER_OF_ELECTRODES 8
 #define NUMBER_OF_ENCODERS 4
+#define NUM_VALUES_TO_FILTER 3
 
 /* Total number of bytes to send over serial port */
 #define TOTAL_BYTES_TO_SEND ((NUMBER_OF_ELECTRODES * 2) + (NUMBER_OF_ENCODERS * 4))
@@ -65,6 +66,12 @@ uint32_t electrode_pin[NUMBER_OF_ELECTRODES] = {ELECTRODE_1, ELECTRODE_2, ELECTR
                             ELECTRODE_5, ELECTRODE_6, ELECTRODE_7, ELECTRODE_8};
 Encoder encoders[NUMBER_OF_ENCODERS] = {encod_1, encod_2, encod_3, encod_4};
 
+
+/* 
+    Array of values to filter and rectify
+*/
+uint16_t values_to_filter[NUM_VALUES_TO_FILTER];
+
 /* 
     Arrays to send on serial port torwards .py program 
     Encoder returns long which is 32 bits on TeensyLC (not 64)
@@ -74,6 +81,11 @@ uint32_t values_encoder[NUMBER_OF_ENCODERS];
 
 /* 2 bytes for electrodes - 4 bytes for encoders */
 uint8_t values_to_send[TOTAL_BYTES_TO_SEND];
+
+/* init */
+float filter_output[3]={0,0,0};
+float filter_input[2]={0,0};
+float filtered_signal[3];
 
 
 /* FUNCTION PROTOTYPES */

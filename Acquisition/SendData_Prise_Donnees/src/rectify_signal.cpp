@@ -15,17 +15,19 @@
 #include "rectify_signal.h"
 
 /* FUNCTIONS */
-uint32_t rectify(uint8_t index, uint32_t filtered_signal_sample[NUM_VALUES_TO_POLL])
+// on rentre un tableau de taille 4* Nb electrodes on veut appliquer rms  en mettant une fonction 
+
+uint16_t rectify(float* filtered_signal_sample)
 {
-    double square = 0;
+    double square = 0.0;
 
     for (int i = 0; i < NUM_VALUES_TO_POLL; i++)
     {
         square += pow(filtered_signal_sample[i], POWER_TWO);
     }
 
-    float mean = (square / NUM_VALUES_TO_POLL);
-    float root = sqrt(mean);
+    double mean = (square / NUM_VALUES_TO_POLL);
+    double root = sqrt(mean);
 
     uint32_t rms_value = round(root);
 

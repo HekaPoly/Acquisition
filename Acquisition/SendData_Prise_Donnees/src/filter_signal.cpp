@@ -19,15 +19,21 @@
 /* CONSTANTS */
 
 /* FUNCTIONS */
-uint32_t filter_and_rectify_signal(uint8_t index)
+
+void filter(float* input, float* output)
 {
-    uint32_t values_sample[NUM_VALUES_TO_POLL];
 
-    /* Créer une fonction de lecture de valeur d'une électrode ici */
+   output[0]=1.56450399*output[1]+ -0.64366232*output[2]+0.01978958*input[0]+0.03957917*input[1];
 
-    /* Filtrer le signal ici */
 
-    /* Appeler fonction de rectification de signal ici */
 
-    /* Retourner la valeur lue pour l'électrode */
+   output[2]=output[1];
+   output[1]=output[0];
+   input[1]=input[0];
+
+
+
+    
 }
+
+

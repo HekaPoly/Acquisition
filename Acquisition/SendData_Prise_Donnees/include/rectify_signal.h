@@ -18,10 +18,10 @@
 #include <Arduino.h>
 
 /* CONSTANTS */
-#define NUM_VALUES_TO_POLL 10
+#define NUM_VALUES_TO_POLL 3
 #define POWER_TWO 2
 
 /* FUNCTION PROTOTYPES */
-uint32_t rectify(uint8_t index, uint32_t filtered_signal_sample[NUM_VALUES_TO_POLL]);
+uint16_t rectify(float* filtered_signal_sample);
 
 #endif /* _RECTIFY_SIGNAL_H_ */

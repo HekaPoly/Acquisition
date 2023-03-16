@@ -14,8 +14,9 @@
  */
 
 #include "main.h"
-#include "filter_signal.h"
 #include "bitwise_operations.h"
+#include "rectify_signal.h"
+#include "filter_signal.h"
 
 /* FUNCTIONS */
 /**
@@ -83,8 +84,23 @@ void loop()
   /* Read all electrode signals and encod_er values */
   for (int i = 0; i < NUMBER_OF_ELECTRODES; i++) 
   {
-    values_electrode[i] = filter_and_rectify_signal(i);
+    for (int j = 0; j<NUM_VALUES_TO_FILTER; j++)
+    {
+      values_to_filter[j] = analogRead(electrode_pin[i]);
+      filter_input[0]=values_to_filter[j];
+      filter(filter_input,filter_output);
+
+      filtered_signal[j]=filter_output[0];
+    }
+    values_electrode[i] = rectify(filtered_signal);
   }
+
+  // for (int j = 0; j<NUM_VALUES_TO_FILTER; j++){
+
+  // values_to_filter[NUM_VALUES_TO_FILTER] = analogRead(electrode_pin[j]);
+  
+  // }
+
 
   values_encoder[0] = abs(encod_1.read());
   values_encoder[1] = abs(encod_2.read());

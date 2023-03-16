@@ -21,7 +21,9 @@
 #define CUTOFF 1000
 #define SAMPLE_RATE 100
 
+
 /* FUNCTION PROTOTYPES */
-uint32_t filter_and_rectify_signal(uint8_t index);
+uint16_t filter_and_rectify_signal(uint8_t index);
+void filter(float* input, float* output );
 
 #endif /* _FILTER_SIGNAL_H_ */
